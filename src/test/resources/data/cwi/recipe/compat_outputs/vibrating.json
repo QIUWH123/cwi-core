@@ -1,0 +1,44 @@
+{
+  "type": "vintageimprovements:vibrating",
+  "ingredients": [
+    {
+      "item": "minecraft:paper"
+    }
+  ],
+  "results": [
+    {
+      "id": "minecraft:iron_ingot"
+    },
+    {
+      "id": "minecraft:gold_ingot"
+    },
+    {
+      "id": "minecraft:copper_ingot"
+    },
+    {
+      "id": "minecraft:coal"
+    },
+    {
+      "id": "minecraft:redstone"
+    },
+    {
+      "id": "minecraft:lapis_lazuli"
+    },
+    {
+      "id": "minecraft:emerald"
+    },
+    {
+      "id": "minecraft:quartz"
+    },
+    {
+      "id": "minecraft:clay_ball"
+    }
+  ],
+  "processing_time": 1,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "vintageimprovements"
+    }
+  ]
+}

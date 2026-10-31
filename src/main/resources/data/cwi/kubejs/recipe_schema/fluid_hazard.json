@@ -1,0 +1,60 @@
+{
+  "keys": [
+    {
+      "name": "fluid",
+      "type": "fluid_ingredient",
+      "default_optional": true,
+      "role": "input"
+    },
+    {
+      "name": "interval",
+      "type": "positive_int",
+      "optional": 10
+    },
+    {
+      "name": "damage",
+      "type": "float",
+      "optional": 0
+    },
+    {
+      "name": "damage_type",
+      "type": "string",
+      "optional": "minecraft:magic",
+      "function_names": [
+        "damageType"
+      ]
+    },
+    {
+      "name": "fire_ticks",
+      "type": "int",
+      "optional": 0,
+      "function_names": [
+        "fireTicks"
+      ]
+    },
+    {
+      "name": "effects",
+      "type": {
+        "type": "list",
+        "component": "cwi:hazard_effect",
+        "min": 0,
+        "max": 64
+      },
+      "optional": []
+    }
+  ],
+  "constructors": [
+    {
+      "keys": []
+    },
+    {
+      "keys": [
+        "fluid",
+        "damage"
+      ]
+    }
+  ],
+  "unique": [
+    "fluid"
+  ]
+}

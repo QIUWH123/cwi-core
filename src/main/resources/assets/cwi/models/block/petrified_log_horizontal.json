@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column_horizontal",
+  "textures": {
+    "end": "cwi:block/petrified_log_top",
+    "side": "cwi:block/petrified_log"
+  }
+}

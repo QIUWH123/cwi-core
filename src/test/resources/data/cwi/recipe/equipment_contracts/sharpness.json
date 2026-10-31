@@ -1,0 +1,11 @@
+{
+  "type": "cwi:equipment_upgrade",
+  "input": {"item": "minecraft:iron_sword"},
+  "ingredients": [
+    {"ingredient": {"item": "minecraft:iron_ingot"}, "count": 2},
+    {"ingredient": {"item": "minecraft:shears"}, "consume": false, "damage": 1}
+  ],
+  "enchantment": "minecraft:sharpness",
+  "max_level": 3,
+  "durability_multiplier": 0.2
+}

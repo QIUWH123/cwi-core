@@ -1,0 +1,12 @@
+{
+  "keys": [
+    {"name":"input", "role":"input", "type":"ingredient", "default_optional":true},
+    {"name":"ingredients", "role":"input", "type":{"type":"list", "component":"cwi:upgrade_ingredient", "min":1, "max":8}, "default_optional":true},
+    {"name":"enchantment", "type":"string", "default_optional":true},
+    {"name":"max_level", "type":"positive_int", "default_optional":true, "function_names":["maxLevel"]},
+    {"name":"durability_multiplier", "type":"double", "default_optional":true, "function_names":["durabilityCost","durabilityMultiplier"]},
+    {"name":"output", "role":"output", "type":"item_stack", "default_optional":true, "function_names":["output"]}
+  ],
+  "constructors": [{"keys":[]}, {"keys":["input","ingredients","enchantment","max_level","durability_multiplier"]}],
+  "unique":["input","ingredients","enchantment","max_level"]
+}

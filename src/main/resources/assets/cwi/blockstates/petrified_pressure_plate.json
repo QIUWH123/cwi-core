@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "cwi:block/petrified_pressure_plate"
+    },
+    "powered=true": {
+      "model": "cwi:block/petrified_pressure_plate_down"
+    }
+  }
+}

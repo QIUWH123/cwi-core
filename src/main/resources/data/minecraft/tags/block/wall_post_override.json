@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "cwi:petrified_sign",
+    "cwi:petrified_wall_sign",
+    "cwi:petrified_pressure_plate"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "keys": [
+    {
+      "name": "input",
+      "role": "input",
+      "type": "ingredient",
+      "default_optional": true,
+      "function_names": ["input", "ingredient"]
+    },
+    {
+      "name": "target",
+      "role": "output",
+      "type": "item_stack",
+      "default_optional": true,
+      "function_names": ["target", "output"]
+    },
+    {
+      "name": "stage",
+      "type": "positive_int",
+      "optional": 1,
+      "function_names": ["requireStage", "requiredStage"]
+    }
+  ],
+  "constructors": [{"keys": []}, {"keys": ["target", "input"]}],
+  "unique": ["input", "target", "stage"]
+}

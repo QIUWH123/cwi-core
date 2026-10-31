@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "tfmg:slag_bricks_slab",
+      "required": false
+    },
+    {
+      "id": "tfmg:slag_bricks_stairs",
+      "required": false
+    },
+    {
+      "id": "tfmg:slag_bricks_wall",
+      "required": false
+    }
+  ]
+}

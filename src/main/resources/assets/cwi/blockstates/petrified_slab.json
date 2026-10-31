@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "cwi:block/petrified_slab"
+    },
+    "type=double": {
+      "model": "cwi:block/petrified_planks"
+    },
+    "type=top": {
+      "model": "cwi:block/petrified_slab_top"
+    }
+  }
+}

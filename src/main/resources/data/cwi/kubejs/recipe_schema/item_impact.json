@@ -1,0 +1,44 @@
+{
+  "keys": [
+    {
+      "name": "input",
+      "type": "ingredient",
+      "default_optional": true,
+      "role": "input"
+    },
+    {
+      "name": "min_height",
+      "type": "double",
+      "optional": 0,
+      "function_names": [
+        "minHeight"
+      ]
+    },
+    {
+      "name": "actions",
+      "type": {
+        "type": "list",
+        "component": "cwi:impact_action",
+        "min": 1,
+        "max": 64
+      },
+      "default_optional": true
+    }
+  ],
+  "constructors": [
+    {
+      "keys": []
+    },
+    {
+      "keys": [
+        "input",
+        "min_height",
+        "actions"
+      ]
+    }
+  ],
+  "unique": [
+    "input",
+    "min_height"
+  ]
+}

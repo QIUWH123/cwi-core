@@ -1,0 +1,6 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "createdieselgenerators:ethanol", "required": false }
+  ]
+}

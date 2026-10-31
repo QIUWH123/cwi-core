@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.quiwh.cwi.mixin.conversion",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "net.quiwh.cwi.mixin.conversion.ConversionMixinPlugin",
+  "mixins": [
+    "BlazeBurnerBlockItemMixin",
+    "powerloader.EmptyChunkLoaderBlockItemMixin",
+    "powergrid.LightningMagnetConversionMixin"
+  ],
+  "client": [
+    "client.MysteriousConversionRegistrationMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

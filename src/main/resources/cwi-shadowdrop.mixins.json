@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.quiwh.cwi.mixin.shadow",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "net.quiwh.cwi.mixin.shadow.ShadowDropMixinPlugin",
+  "mixins": [
+    "kubejs.ItemBuilderShadowMixin", "kubejs.BlockBuilderShadowMixin",
+    "kubejs.BuilderShadowRegistrationMixin", "kubejs.ItemModificationsShadowMixin",
+    "kubejs.BlockModificationsShadowMixin"
+  ],
+  "client": ["ShadowStyleMixin", "ItemRendererMixin"],
+  "injectors": {"defaultRequire": 1}
+}

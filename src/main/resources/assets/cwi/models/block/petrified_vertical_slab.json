@@ -1,0 +1,8 @@
+{
+  "parent": "cwi:block/vertical_slab",
+  "textures": {
+    "bottom": "cwi:block/petrified_planks",
+    "top": "cwi:block/petrified_planks",
+    "side": "cwi:block/petrified_planks"
+  }
+}

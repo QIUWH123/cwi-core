@@ -1,0 +1,30 @@
+{
+  "replace": false,
+  "values": [
+    "cwi:petrified_planks",
+    "cwi:petrified_slab",
+    "cwi:petrified_vertical_slab",
+    "cwi:petrified_stairs",
+    "cwi:petrified_pressure_plate",
+    "cwi:petrified_button",
+    "cwi:petrified_post",
+    "cwi:stripped_petrified_post",
+    "cwi:petrified_fence",
+    "cwi:petrified_fence_gate",
+    "cwi:petrified_door",
+    "cwi:petrified_trapdoor",
+    "cwi:petrified_sign",
+    "cwi:petrified_hanging_sign",
+    "cwi:petrified_wall_sign",
+    "cwi:petrified_wall_hanging_sign",
+    "cwi:petrified_log",
+    "cwi:stripped_petrified_log",
+    "cwi:petrified_wood",
+    "cwi:stripped_petrified_wood",
+    "cwi:porous_petrified_log",
+    "cwi:petrified_boards",
+    "cwi:petrified_bookshelf",
+    "cwi:trimmed_petrified_planks",
+    "cwi:vertical_petrified_planks"
+  ]
+}

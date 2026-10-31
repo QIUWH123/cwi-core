@@ -1,0 +1,56 @@
+{
+  "replace": false,
+  "values": [
+    "cwi:infected_budding_amethyst",
+    "cwi:infected_budding_quartz",
+    "cwi:amber_block",
+    "cwi:amber_cluster",
+    "cwi:petrified_planks",
+    "cwi:petrified_slab",
+    "cwi:petrified_vertical_slab",
+    "cwi:petrified_stairs",
+    "cwi:petrified_pressure_plate",
+    "cwi:petrified_button",
+    "cwi:petrified_post",
+    "cwi:stripped_petrified_post",
+    "cwi:petrified_fence",
+    "cwi:petrified_fence_gate",
+    "cwi:petrified_door",
+    "cwi:petrified_trapdoor",
+    "cwi:petrified_sign",
+    "cwi:petrified_hanging_sign",
+    "cwi:petrified_wall_sign",
+    "cwi:petrified_wall_hanging_sign",
+    "cwi:petrified_log",
+    "cwi:stripped_petrified_log",
+    "cwi:petrified_wood",
+    "cwi:stripped_petrified_wood",
+    "cwi:porous_petrified_log",
+    "cwi:petrified_boards",
+    "cwi:petrified_bookshelf",
+    "cwi:trimmed_petrified_planks",
+    {
+      "id": "tfmg:slag_bricks_slab",
+      "required": false
+    },
+    {
+      "id": "tfmg:slag_bricks_stairs",
+      "required": false
+    },
+    {
+      "id": "tfmg:slag_bricks_wall",
+      "required": false
+    },
+    "cwi:vertical_petrified_planks",
+    "cwi:blast_furnace",
+    "cwi:furnace_hatch",
+    "cwi:incubator",
+    "cwi:mixing_vessel",
+    "cwi:stirling_engine",
+    "cwi:lava_extractor_head",
+    "cwi:lava_extractor_pump",
+    "cwi:lava_extractor_stress_input",
+    "cwi:lava_extractor_pump_blade",
+    "cwi:solar_evaporator"
+  ]
+}

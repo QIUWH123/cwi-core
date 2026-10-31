@@ -1,0 +1,15 @@
+{
+  "type": "cwi:blast_furnace_processing",
+  "item_inputs": [{"ingredient": {"item": "minecraft:cobbled_deepslate"}}],
+  "fluid_inputs": [
+    {"ingredient": {"fluid": "minecraft:water"}, "amount": 100},
+    {"ingredient": {"fluid": "minecraft:lava"}, "amount": 100},
+    {"ingredient": {"fluid": "create:honey"}, "amount": 100}
+  ],
+  "fluid_outputs": [
+    {"stack": {"id": "minecraft:lava", "amount": 100}},
+    {"stack": {"id": "minecraft:water", "amount": 100}}
+  ],
+  "processing_time": 20,
+  "minimum_heat": 1200
+}

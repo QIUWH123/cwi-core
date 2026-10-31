@@ -1,0 +1,23 @@
+CwiEvents.equipmentUpgrades(event => {
+    event.material('contract_iron').tier(3).durabilityMultiplier(0.5)
+        .equipment('axe', 'minecraft:iron_axe').component('plate', 'minecraft:iron_ingot')
+    event.upgrade('contract_component').materials('contract_iron').types('axe')
+        .enchantment('minecraft:efficiency').maxLevel(4).minimumTier(2).durabilityCost(0.2)
+        .component('plate', 2, true, 0).tool('minecraft:shears', 2)
+    event.upgrade('contract_direct').input('minecraft:shield')
+        .enchantment('minecraft:unbreaking').maxLevel(2).durabilityCost(0.04)
+        .ingredients(['2x minecraft:iron_ingot', {ingredient: Ingredient.of('#c:sands'), consume: false, damage: 0}])
+    event.upgrade('contract_fixed').types('axe').materials('contract_iron').fixedMax(true)
+        .enchantment('minecraft:unbreaking').maxLevel(5).durabilityCost(0.1).ingredient('minecraft:flint', 1)
+    event.upgrade('contract_removed').input('minecraft:wooden_hoe')
+        .enchantment('minecraft:unbreaking').ingredient('minecraft:dirt', 1)
+})
+ServerEvents.recipes(event => {
+    event.remove({id: 'cwi:equipment_upgrade/contract_removed_manual_only'})
+    event.replaceInput({id: 'cwi:equipment_upgrade/contract_component/cwi/contract_iron/axe_manual_only'},
+        'minecraft:iron_ingot', 'minecraft:gold_ingot')
+    event.recipes.cwi.equipment_upgrade().input('minecraft:iron_hoe')
+        .ingredients(['2x minecraft:iron_ingot', {item: 'minecraft:shears', consume: false, damage: 2}])
+        .enchantment('minecraft:efficiency').maxLevel(3).durabilityCost(0.1)
+        .output('minecraft:diamond_hoe').id('cwi:contracts/upgrade_output_manual_only')
+})

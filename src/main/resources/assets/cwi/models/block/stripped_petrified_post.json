@@ -1,0 +1,7 @@
+{
+  "render_type": "minecraft:cutout",
+  "parent": "cwi:block/post",
+  "textures": {
+    "texture": "cwi:block/stripped_petrified_log"
+  }
+}

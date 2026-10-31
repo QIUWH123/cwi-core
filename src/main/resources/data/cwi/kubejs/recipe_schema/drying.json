@@ -1,0 +1,35 @@
+{
+  "keys": [
+    {
+      "name": "input",
+      "type": "string",
+      "default_optional": true
+    },
+    {
+      "name": "output",
+      "type": "string",
+      "default_optional": true
+    },
+    {
+      "name": "chance",
+      "type": "double",
+      "optional": 1
+    }
+  ],
+  "constructors": [
+    {
+      "keys": []
+    },
+    {
+      "keys": [
+        "output",
+        "input",
+        "chance"
+      ]
+    }
+  ],
+  "unique": [
+    "input",
+    "output"
+  ]
+}

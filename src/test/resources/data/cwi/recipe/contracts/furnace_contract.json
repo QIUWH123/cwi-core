@@ -1,0 +1,20 @@
+{
+  "type": "cwi:blast_furnace_processing",
+  "item_inputs": [
+    {
+      "ingredient": {
+        "item": "minecraft:cobblestone"
+      }
+    }
+  ],
+  "fluid_outputs": [
+    {
+      "stack": {
+        "id": "minecraft:lava",
+        "amount": 250
+      }
+    }
+  ],
+  "processing_time": 100,
+  "minimum_heat": 1200
+}

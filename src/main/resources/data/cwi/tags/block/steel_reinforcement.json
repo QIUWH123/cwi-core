@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "cwi:steel_blast_furnace_reinforcement",
+    {
+      "id": "kubejs:steel_blast_furnace_reinforcement",
+      "required": false
+    }
+  ]
+}

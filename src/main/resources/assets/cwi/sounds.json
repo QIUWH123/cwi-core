@@ -1,0 +1,34 @@
+{
+  "player_spawn": {
+    "sounds": [
+      "cwi:player_spawn1",
+      "cwi:player_spawn2",
+      "cwi:player_spawn3",
+      "cwi:player_spawn4"
+    ]
+  },
+  "steel_pipe": {
+    "sounds": [
+      "cwi:steel_pipe"
+    ]
+  },
+  "drilling": {
+    "sounds": [
+      "cwi:item/drilling"
+    ]
+  },
+  "oxygen_intake": {
+    "sounds": [
+      "cwi:oxygen/intake_1",
+      "cwi:oxygen/intake_2",
+      "cwi:oxygen/intake_3"
+    ]
+  },
+  "oxygen_outtake": {
+    "sounds": [
+      "cwi:oxygen/outtake_1",
+      "cwi:oxygen/outtake_2",
+      "cwi:oxygen/outtake_3"
+    ]
+  }
+}

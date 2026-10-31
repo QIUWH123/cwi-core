@@ -1,0 +1,41 @@
+{
+  "keys": [
+    {
+      "name": "input",
+      "type": "string",
+      "default_optional": true
+    },
+    {
+      "name": "fluid",
+      "type": "flat_sized_fluid_ingredient",
+      "default_optional": true,
+      "role": "input"
+    },
+    {
+      "name": "outputs",
+      "type": {
+        "type": "list",
+        "component": "string",
+        "min": 1,
+        "max": 64
+      },
+      "default_optional": true
+    }
+  ],
+  "constructors": [
+    {
+      "keys": []
+    },
+    {
+      "keys": [
+        "outputs",
+        "input",
+        "fluid"
+      ]
+    }
+  ],
+  "unique": [
+    "input",
+    "fluid"
+  ]
+}

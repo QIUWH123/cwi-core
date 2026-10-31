@@ -1,0 +1,43 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "minecraft:potato"
+  },
+  "transitional_item": {
+    "id": "minecraft:stick"
+  },
+  "sequence": [
+    {
+      "type": "createaddition:rolling",
+      "ingredients": [
+        {
+          "item": "minecraft:stick"
+        }
+      ],
+      "results": [
+        {
+          "id": "minecraft:stick"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "id": "minecraft:emerald",
+      "count": 3,
+      "chance": 0.75
+    },
+    {
+      "id": "minecraft:coal",
+      "count": 2,
+      "chance": 0.25
+    }
+  ],
+  "loops": 1,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "createaddition"
+    }
+  ]
+}

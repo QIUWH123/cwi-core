@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "cwi:fireproof_bricks",
+    {
+      "id": "tfmg:fireproof_bricks",
+      "required": false
+    }
+  ]
+}

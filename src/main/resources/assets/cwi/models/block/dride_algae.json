@@ -1,0 +1,40 @@
+{
+  "textures": {
+    "particle": "minecraft:block/dried_kelp_top",
+    "algae": "minecraft:block/dried_kelp_top"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#algae"
+        },
+        "down": {
+          "texture": "#algae"
+        },
+        "north": {
+          "texture": "#algae"
+        },
+        "south": {
+          "texture": "#algae"
+        },
+        "east": {
+          "texture": "#algae"
+        },
+        "west": {
+          "texture": "#algae"
+        }
+      }
+    }
+  ]
+}

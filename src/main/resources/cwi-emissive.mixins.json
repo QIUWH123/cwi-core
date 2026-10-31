@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.quiwh.cwi.mixin.emissive",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "net.quiwh.cwi.mixin.emissive.EmissiveMixinPlugin",
+  "client": [
+    "SpriteResourceLoaderMixin",
+    "BakedQuadMixin",
+    "ModelBlockRendererMixin",
+    "QuadLighterMixin",
+    "ItemRendererMixin",
+    "SodiumBlockRenderContextMixin"
+  ],
+  "injectors": {"defaultRequire": 1}
+}

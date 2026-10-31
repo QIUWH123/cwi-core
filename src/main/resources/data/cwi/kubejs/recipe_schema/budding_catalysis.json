@@ -1,0 +1,51 @@
+{
+  "keys": [
+    {
+      "name": "input",
+      "type": "string",
+      "default_optional": true
+    },
+    {
+      "name": "fluid",
+      "type": "flat_sized_fluid_ingredient",
+      "default_optional": true,
+      "role": "input"
+    },
+    {
+      "name": "stages",
+      "type": {
+        "type": "list",
+        "component": "string",
+        "min": 1,
+        "max": 16
+      },
+      "default_optional": true
+    },
+    {
+      "name": "chance",
+      "type": "double",
+      "optional": 1
+    },
+    {
+      "name": "attempts",
+      "type": "positive_int",
+      "optional": 1
+    }
+  ],
+  "constructors": [
+    {
+      "keys": []
+    },
+    {
+      "keys": [
+        "input",
+        "fluid",
+        "stages"
+      ]
+    }
+  ],
+  "unique": [
+    "input",
+    "fluid"
+  ]
+}

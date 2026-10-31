@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "cwi:petrified_slab",
+    {
+      "id": "tfmg:slag_bricks_slab",
+      "required": false
+    }
+  ]
+}

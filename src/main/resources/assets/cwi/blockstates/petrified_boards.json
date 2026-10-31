@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "cwi:block/petrified_boards_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "cwi:block/petrified_boards"
+    },
+    "axis=z": {
+      "model": "cwi:block/petrified_boards_horizontal",
+      "x": 90
+    }
+  }
+}

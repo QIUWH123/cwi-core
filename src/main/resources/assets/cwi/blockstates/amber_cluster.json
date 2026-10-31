@@ -1,0 +1,29 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "cwi:block/amber_cluster",
+      "x": 180
+    },
+    "facing=up": {
+      "model": "cwi:block/amber_cluster"
+    },
+    "facing=west": {
+      "model": "cwi:block/amber_cluster",
+      "x": 90,
+      "y": 270
+    },
+    "facing=east": {
+      "model": "cwi:block/amber_cluster",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south": {
+      "model": "cwi:block/amber_cluster",
+      "x": 270
+    },
+    "facing=north": {
+      "model": "cwi:block/amber_cluster",
+      "x": 90
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,working=false": {
+      "model": "cwi:block/mixing_vessel",
+      "y": 0
+    },
+    "facing=north,working=true": {
+      "model": "cwi:block/mixing_vessel",
+      "y": 0
+    },
+    "facing=east,working=false": {
+      "model": "cwi:block/mixing_vessel",
+      "y": 90
+    },
+    "facing=east,working=true": {
+      "model": "cwi:block/mixing_vessel",
+      "y": 90
+    },
+    "facing=south,working=false": {
+      "model": "cwi:block/mixing_vessel",
+      "y": 180
+    },
+    "facing=south,working=true": {
+      "model": "cwi:block/mixing_vessel",
+      "y": 180
+    },
+    "facing=west,working=false": {
+      "model": "cwi:block/mixing_vessel",
+      "y": 270
+    },
+    "facing=west,working=true": {
+      "model": "cwi:block/mixing_vessel",
+      "y": 270
+    }
+  }
+}

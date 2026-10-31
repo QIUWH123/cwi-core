@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "pillar_state=default": {
+      "model": "cwi:block/trimmed_petrified_planks_default"
+    },
+    "pillar_state=lower": {
+      "model": "cwi:block/trimmed_petrified_planks_lower"
+    },
+    "pillar_state=middle": {
+      "model": "cwi:block/trimmed_petrified_planks_middle"
+    },
+    "pillar_state=upper": {
+      "model": "cwi:block/trimmed_petrified_planks_upper"
+    }
+  }
+}

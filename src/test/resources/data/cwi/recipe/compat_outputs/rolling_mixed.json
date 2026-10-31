@@ -1,0 +1,62 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "minecraft:string"
+  },
+  "transitional_item": {
+    "id": "minecraft:stick"
+  },
+  "sequence": [
+    {
+      "type": "createaddition:rolling",
+      "ingredients": [
+        {
+          "item": "minecraft:stick"
+        }
+      ],
+      "results": [
+        {
+          "id": "minecraft:stick"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "minecraft:stick"
+        }
+      ],
+      "results": [
+        {
+          "id": "minecraft:stick"
+        }
+      ]
+    },
+    {
+      "type": "createaddition:rolling",
+      "ingredients": [
+        {
+          "item": "minecraft:stick"
+        }
+      ],
+      "results": [
+        {
+          "id": "minecraft:stick"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "id": "minecraft:gold_ingot"
+    }
+  ],
+  "loops": 1,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "createaddition"
+    }
+  ]
+}

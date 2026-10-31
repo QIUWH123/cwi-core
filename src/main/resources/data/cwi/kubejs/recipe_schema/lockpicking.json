@@ -1,0 +1,62 @@
+{
+  "keys": [
+    {
+      "name": "tool",
+      "type": "ingredient",
+      "default_optional": true,
+      "role": "input"
+    },
+    {
+      "name": "blocks",
+      "type": {
+        "type": "list",
+        "component": "string",
+        "min": 1,
+        "max": 128
+      },
+      "default_optional": true
+    },
+    {
+      "name": "chance",
+      "type": "double",
+      "optional": 0
+    },
+    {
+      "name": "durability",
+      "type": "int",
+      "optional": 3
+    },
+    {
+      "name": "loot_only",
+      "type": "boolean",
+      "optional": true,
+      "function_names": [
+        "lootOnly"
+      ]
+    },
+    {
+      "name": "silverfish_chance",
+      "type": "double",
+      "optional": 0.1,
+      "function_names": [
+        "silverfishChance"
+      ]
+    }
+  ],
+  "constructors": [
+    {
+      "keys": []
+    },
+    {
+      "keys": [
+        "tool",
+        "blocks",
+        "chance"
+      ]
+    }
+  ],
+  "unique": [
+    "tool",
+    "blocks"
+  ]
+}

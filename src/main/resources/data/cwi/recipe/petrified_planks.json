@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "tag": "cwi:petrified_logs"
+    }
+  ],
+  "result": {
+    "count": 4,
+    "id": "cwi:petrified_planks"
+  }
+}

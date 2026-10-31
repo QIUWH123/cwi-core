@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "part=top": {
+      "model": "cwi:block/rope_hook"
+    },
+    "part=middle": {
+      "model": "cwi:block/rope"
+    },
+    "part=bottom": {
+      "model": "cwi:block/rope_knot"
+    }
+  }
+}

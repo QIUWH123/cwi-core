@@ -1,0 +1,19 @@
+{
+  "type": "tfmg:vat_machine_recipe",
+  "ingredients": [
+    {"item": "minecraft:paper"}, {"item": "minecraft:wheat"},
+    {"item": "minecraft:potato"}, {"item": "minecraft:carrot"},
+    {"item": "minecraft:sugar_cane"}, {"item": "minecraft:string"},
+    {"item": "minecraft:stick"}, {"item": "minecraft:flint"},
+    {"type": "neoforge:single", "fluid": "minecraft:water", "amount": 100}
+  ],
+  "results": [
+    {"id": "minecraft:iron_ingot", "count": 1}, {"id": "minecraft:gold_ingot", "count": 2},
+    {"id": "minecraft:copper_ingot", "count": 3}, {"id": "minecraft:coal", "count": 4},
+    {"id": "minecraft:redstone", "count": 5}, {"id": "minecraft:lapis_lazuli", "count": 6},
+    {"id": "minecraft:emerald", "count": 7}, {"id": "minecraft:quartz", "count": 8},
+    {"id": "minecraft:lava", "amount": 50}
+  ],
+  "processing_time": 1,
+  "neoforge:conditions": [{"type": "neoforge:mod_loaded", "modid": "tfmg"}]
+}

@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#kubejs:petri_dish",
+      "required": false
+    },
+    {
+      "id": "kubejs:empty_petri_dish",
+      "required": false
+    },
+    {
+      "id": "kubejs:petri_dish",
+      "required": false
+    },
+    {
+      "id": "kubejs:sterile_petri_dish",
+      "required": false
+    }
+  ]
+}

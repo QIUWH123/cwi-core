@@ -1,0 +1,112 @@
+{
+  "keys": [
+    {
+      "name": "input",
+      "type": "ingredient",
+      "default_optional": true,
+      "role": "input"
+    },
+    {
+      "name": "additional_input",
+      "type": "optional_ingredient",
+      "default_optional": true,
+      "function_names": [
+        "additionalInput"
+      ],
+      "role": "input"
+    },
+    {
+      "name": "additional_weight",
+      "type": "double",
+      "optional": 9,
+      "function_names": [
+        "additionalWeight"
+      ]
+    },
+    {
+      "name": "interval",
+      "type": "positive_int",
+      "optional": 10
+    },
+    {
+      "name": "retention",
+      "type": "double",
+      "optional": 0.85
+    },
+    {
+      "name": "scale",
+      "type": "double",
+      "optional": 0.02
+    },
+    {
+      "name": "threshold",
+      "type": "double",
+      "optional": 1.5
+    },
+    {
+      "name": "state_key",
+      "type": "string",
+      "optional": "neurotoxinAmount",
+      "function_names": [
+        "stateKey"
+      ]
+    },
+    {
+      "name": "effect",
+      "type": "string",
+      "default_optional": true
+    },
+    {
+      "name": "duration",
+      "type": "positive_int",
+      "optional": 11
+    },
+    {
+      "name": "melee_chance",
+      "type": "double",
+      "optional": 0,
+      "function_names": [
+        "meleeChance"
+      ]
+    },
+    {
+      "name": "melee_duration",
+      "type": "int",
+      "optional": 100,
+      "function_names": [
+        "meleeDuration"
+      ]
+    },
+    {
+      "name": "strong_melee_chance",
+      "type": "double",
+      "optional": 0,
+      "function_names": [
+        "strongMeleeChance"
+      ]
+    },
+    {
+      "name": "strong_melee_duration",
+      "type": "int",
+      "optional": 200,
+      "function_names": [
+        "strongMeleeDuration"
+      ]
+    }
+  ],
+  "constructors": [
+    {
+      "keys": []
+    },
+    {
+      "keys": [
+        "input",
+        "effect"
+      ]
+    }
+  ],
+  "unique": [
+    "input",
+    "state_key"
+  ]
+}

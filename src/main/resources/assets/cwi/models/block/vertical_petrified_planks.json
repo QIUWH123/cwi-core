@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "cwi:block/vertical_petrified_planks"
+  }
+}

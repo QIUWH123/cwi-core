@@ -1,0 +1,3 @@
+net.quiwh.cwi.compat.CwiKubeJSPlugin
+
+net.quiwh.cwi.compat.CwiRecipeValuesProbeJS probejs

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "cwi:petrified_log",
+    "cwi:stripped_petrified_log",
+    "cwi:petrified_wood",
+    "cwi:stripped_petrified_wood"
+  ]
+}

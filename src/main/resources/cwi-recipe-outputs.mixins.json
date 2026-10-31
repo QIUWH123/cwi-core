@@ -1,0 +1,40 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.quiwh.cwi.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "net.quiwh.cwi.mixin.RecipeOutputMixinPlugin",
+  "mixins": [
+    "vintage.VibratingRecipeMixin",
+    "vintage.CentrifugationRecipeMixin",
+    "vintage.PressurizingRecipeParamsMixin",
+    "vintage.VibratingTableBlockEntityMixin",
+    "vintage.CentrifugeBlockEntityMixin",
+    "vintage.CentrifugeRedstoneMixin",
+    "vintage.CurvingPressRedstoneMixin",
+    "rubberworks.CompressingRecipeMixin",
+    "rubberworks.CompressorBlockEntityMixin",
+    "tfmg.VatMachineRecipeMixin",
+    "tfmg.VatBlockEntityMixin",
+    "metallurgy.FoundryBasinRecipeMixin",
+    "metallurgy.FoundryBasinBlockEntityMixin",
+    "createaddition.RollingRecipeMixin",
+    "createaddition.RollingMillBlockEntityMixin"
+  ],
+  "client": [
+    "client.RollingMillCategoryMixin",
+    "client.AnimatedRollingMillMixin",
+    "vintage.CentrifugeRedstoneRendererMixin",
+    "vintage.CurvingPressRedstoneRendererMixin",
+    "vintage.VintageRedstoneScenesMixin",
+    "vintage.VintageRedstoneSceneRegistrationMixin",
+    "vintage.VintageRedstoneTagRegistrationMixin",
+    "client.VibratingCategoryMixin",
+    "client.CentrifugationCategoryMixin",
+    "client.CompressingCategoryMixin",
+    "client.ChemicalVatCategoryMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

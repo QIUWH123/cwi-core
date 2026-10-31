@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "cwi:petrified_stairs",
+    {
+      "id": "tfmg:slag_bricks_stairs",
+      "required": false
+    }
+  ]
+}

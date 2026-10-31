@@ -1,0 +1,28 @@
+{
+  "type": "cwi:mixing_vessel_mixing",
+  "item_inputs": [
+    {
+      "ingredient": {
+        "item": "minecraft:iron_ingot"
+      },
+      "count": 2
+    }
+  ],
+  "fluid_inputs": [
+    {
+      "ingredient": {
+        "fluid": "minecraft:water"
+      },
+      "amount": 100
+    }
+  ],
+  "item_outputs": [
+    {
+      "stack": {
+        "id": "minecraft:gold_ingot",
+        "count": 1
+      }
+    }
+  ],
+  "processing_time": 20
+}

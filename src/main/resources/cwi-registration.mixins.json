@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.quiwh.cwi.mixin.registry",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "HolderReferenceAccessor",
+    "MappedRegistryMixin",
+    "DeferredHolderMixin",
+    "RegistryAliasMixin",
+    "CreativeMaterialMixin",
+    "VintageCreativeOutputMixin",
+    "VintageMaterialDataMixin",
+    "VintageMaterialTagsMixin",
+    "VintageMaterialTrimMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

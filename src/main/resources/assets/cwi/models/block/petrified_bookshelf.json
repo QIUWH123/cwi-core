@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "cwi:block/petrified_planks",
+    "side": "cwi:block/petrified_bookshelf"
+  }
+}

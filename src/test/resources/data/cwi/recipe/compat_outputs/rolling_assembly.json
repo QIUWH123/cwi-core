@@ -1,0 +1,50 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "minecraft:paper"
+  },
+  "transitional_item": {
+    "id": "minecraft:leather"
+  },
+  "sequence": [
+    {
+      "type": "createaddition:rolling",
+      "ingredients": [
+        {
+          "item": "minecraft:leather"
+        }
+      ],
+      "results": [
+        {
+          "id": "minecraft:leather"
+        }
+      ]
+    },
+    {
+      "type": "createaddition:rolling",
+      "ingredients": [
+        {
+          "item": "minecraft:leather"
+        }
+      ],
+      "results": [
+        {
+          "id": "minecraft:leather"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "id": "minecraft:emerald",
+      "count": 3
+    }
+  ],
+  "loops": 2,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "createaddition"
+    }
+  ]
+}

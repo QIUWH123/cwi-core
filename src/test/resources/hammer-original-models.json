@@ -1,0 +1,375 @@
+[
+  {
+    "item": "brass_hammer",
+    "stage": 1,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/brass_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_1"
+      }
+    }
+  },
+  {
+    "item": "brass_hammer",
+    "stage": 2,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/brass_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_2"
+      }
+    }
+  },
+  {
+    "item": "brass_hammer",
+    "stage": 3,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/brass_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_3"
+      }
+    }
+  },
+  {
+    "item": "bronze_hammer",
+    "stage": 1,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/bronze_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_1"
+      }
+    }
+  },
+  {
+    "item": "bronze_hammer",
+    "stage": 2,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/bronze_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_2"
+      }
+    }
+  },
+  {
+    "item": "bronze_hammer",
+    "stage": 3,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/bronze_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_3"
+      }
+    }
+  },
+  {
+    "item": "copper_hammer",
+    "stage": 1,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/copper_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_1"
+      }
+    }
+  },
+  {
+    "item": "copper_hammer",
+    "stage": 2,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/copper_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_2"
+      }
+    }
+  },
+  {
+    "item": "copper_hammer",
+    "stage": 3,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/copper_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_3"
+      }
+    }
+  },
+  {
+    "item": "golden_hammer",
+    "stage": 1,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/golden_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_1"
+      }
+    }
+  },
+  {
+    "item": "golden_hammer",
+    "stage": 2,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/golden_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_2"
+      }
+    }
+  },
+  {
+    "item": "golden_hammer",
+    "stage": 3,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/golden_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_3"
+      }
+    }
+  },
+  {
+    "item": "iron_hammer",
+    "stage": 1,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/iron_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_1"
+      }
+    }
+  },
+  {
+    "item": "iron_hammer",
+    "stage": 2,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/iron_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_2"
+      }
+    }
+  },
+  {
+    "item": "iron_hammer",
+    "stage": 3,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/iron_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_3"
+      }
+    }
+  },
+  {
+    "item": "lead_hammer",
+    "stage": 1,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/lead_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_1"
+      }
+    }
+  },
+  {
+    "item": "lead_hammer",
+    "stage": 2,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/lead_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_2"
+      }
+    }
+  },
+  {
+    "item": "lead_hammer",
+    "stage": 3,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/lead_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_3"
+      }
+    }
+  },
+  {
+    "item": "netherite_hammer",
+    "stage": 1,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/netherite_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_1"
+      }
+    }
+  },
+  {
+    "item": "netherite_hammer",
+    "stage": 2,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/netherite_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_2"
+      }
+    }
+  },
+  {
+    "item": "netherite_hammer",
+    "stage": 3,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/netherite_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_3"
+      }
+    }
+  },
+  {
+    "item": "rusted_iron_hammer",
+    "stage": 1,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/rusted_iron_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_1"
+      }
+    }
+  },
+  {
+    "item": "rusted_iron_hammer",
+    "stage": 2,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/rusted_iron_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_2"
+      }
+    }
+  },
+  {
+    "item": "rusted_iron_hammer",
+    "stage": 3,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/rusted_iron_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_3"
+      }
+    }
+  },
+  {
+    "item": "stainless_steel_hammer",
+    "stage": 1,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/stainless_steel_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_1"
+      }
+    }
+  },
+  {
+    "item": "stainless_steel_hammer",
+    "stage": 2,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/stainless_steel_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_2"
+      }
+    }
+  },
+  {
+    "item": "stainless_steel_hammer",
+    "stage": 3,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/stainless_steel_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_3"
+      }
+    }
+  },
+  {
+    "item": "steel_hammer",
+    "stage": 1,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/steel_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_1"
+      }
+    }
+  },
+  {
+    "item": "steel_hammer",
+    "stage": 2,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/steel_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_2"
+      }
+    }
+  },
+  {
+    "item": "steel_hammer",
+    "stage": 3,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/steel_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_3"
+      }
+    }
+  },
+  {
+    "item": "stone_hammer",
+    "stage": 1,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/charged_stone_hammer"
+      }
+    }
+  },
+  {
+    "item": "zinc_hammer",
+    "stage": 1,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/zinc_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_1"
+      }
+    }
+  },
+  {
+    "item": "zinc_hammer",
+    "stage": 2,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/zinc_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_2"
+      }
+    }
+  },
+  {
+    "item": "zinc_hammer",
+    "stage": 3,
+    "expected": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "kubejs:item/tools/zinc_hammer",
+        "layer1": "kubejs:item/tools/charged_overlay_3"
+      }
+    }
+  }
+]

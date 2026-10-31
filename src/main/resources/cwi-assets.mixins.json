@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.quiwh.cwi.mixin.assets",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "net.quiwh.cwi.mixin.assets.AssetPriorityMixinPlugin",
+  "client": ["KubeJSAssetPriorityMixin"],
+  "injectors": {"defaultRequire": 1}
+}

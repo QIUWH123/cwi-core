@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "cwi:block/trimmed_petrified_planks_end",
+    "side": "cwi:block/trimmed_petrified_planks_side_upper"
+  }
+}

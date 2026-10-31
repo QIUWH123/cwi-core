@@ -1,0 +1,41 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#c:gases",
+      "required": false
+    },
+    {
+      "id": "#kubejs:gas",
+      "required": false
+    },
+    {
+      "id": "#cwi:gasses",
+      "required": false
+    },
+    {
+      "id": "tfmg:air",
+      "required": false
+    },
+    {
+      "id": "tfmg:oxygen",
+      "required": false
+    },
+    {
+      "id": "tfmg:hydrogen",
+      "required": false
+    },
+    {
+      "id": "kubejs:oxygen",
+      "required": false
+    },
+    {
+      "id": "kubejs:hydrogen",
+      "required": false
+    },
+    {
+      "id": "kubejs:nitrogen",
+      "required": false
+    }
+  ]
+}

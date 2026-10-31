@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#c:coal_coke",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/coal_coke",
+      "required": false
+    },
+    {
+      "id": "tfmg:coal_coke",
+      "required": false
+    },
+    {
+      "id": "tfmg:coal_coke_dust",
+      "required": false
+    },
+    {
+      "id": "tfmg:coal_coke_block",
+      "required": false
+    }
+  ]
+}

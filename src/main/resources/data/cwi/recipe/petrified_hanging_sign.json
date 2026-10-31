@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "!": {
+      "item": "minecraft:chain"
+    },
+    "#": {
+      "item": "cwi:stripped_petrified_log"
+    }
+  },
+  "pattern": [
+    "! !",
+    "###",
+    "###"
+  ],
+  "result": {
+    "count": 6,
+    "id": "cwi:petrified_hanging_sign"
+  }
+}

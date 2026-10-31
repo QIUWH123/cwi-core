@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "cwi:eruptive_bedrock",
+    {
+      "id": "kubejs:eruptive_bedrock",
+      "required": false
+    }
+  ]
+}
