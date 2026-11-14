@@ -55,14 +55,13 @@ public final class RecipeTransaction {
         return Math.multiplyExact(amount, copies);
     }
 
-    private static int itemOutputCount(int amount, float chance, int batch, RandomSource random) {
-        int maximum = Math.multiplyExact(amount, batch);
+    private static int itemOutputCount(ItemStack stack, float chance, int batch, RandomSource random) {
+        int maximum = Math.multiplyExact(stack.getCount(), batch);
         if (chance == 0) return 0;
         if (random == null || chance >= 1) return maximum;
-        int produced = maximum;
-        // Same comparison and roll order as Create's ProcessingOutput, including counted batches.
-        for (int i = 0; i < maximum; i++) if (random.nextFloat() > chance) produced--;
-        return produced;
+        var result = new com.simibubi.create.content.processing.recipe.ProcessingOutput(
+                stack.copyWithCount(maximum), chance);
+        return result.rollOutput(random).getCount();
     }
 
     private static Plan plan(MachineRecipe recipe, IItemHandler items, IFluidHandler fluids, int batch, Phase phase, RandomSource random) {
@@ -95,7 +94,7 @@ public final class RecipeTransaction {
             }
             var itemOutputs = new ArrayList<ItemStack>();
             for (var output : recipe.itemOutputs()) if (includes(phase, output.perTick())) {
-                int produced = itemOutputCount(output.stack().getCount(), output.chance(), batch, random);
+                int produced = itemOutputCount(output.stack(), output.chance(), batch, random);
                 if (produced > 0) itemOutputs.add(output.stack().copyWithCount(produced));
             }
             if (!itemCapacityPossible(itemOutputs, items, itemState, itemAvailable, itemConsumed, itemAccepts)) return null;
@@ -106,7 +105,8 @@ public final class RecipeTransaction {
                 int[] reservedAvailable = remaining(itemAvailable, allocation);
                 Predicate<ItemStack[]> future = phase != Phase.TICK ? null : next ->
                         planItems(recipe, items, next, reservedAvailable, batch, Phase.ORDINARY, null) != null;
-                ItemStack[] inserted = insertItems(itemOutputs, items, after, future);
+                var products = withRemainders(itemOutputs, itemState, allocation);
+                ItemStack[] inserted = insertItems(products, items, after, future);
                 if (inserted == null) return false;
                 plannedItems[0] = inserted;
                 return true;
@@ -114,9 +114,19 @@ public final class RecipeTransaction {
             Predicate<int[]> optimistic = phase != Phase.TICK ? place : allocation -> {
                 ItemStack[] after = new ItemStack[itemState.length];
                 for (int slot = 0; slot < after.length; slot++) { after[slot] = itemState[slot].copy(); after[slot].shrink(allocation[slot]); }
-                return insertItems(itemOutputs, items, after, null) != null;
+                return insertItems(withRemainders(itemOutputs, itemState, allocation), items, after, null) != null;
             };
             return InputAllocation.consumeForOutputs(itemAvailable, itemRequired, itemConsumed, itemAccepts, place, optimistic) == null ? null : plannedItems[0];
+    }
+
+    static List<ItemStack> withRemainders(List<ItemStack> outputs, ItemStack[] before, int[] consumed) {
+        var products = new ArrayList<>(outputs);
+        for (int slot = 0; slot < before.length; slot++) if (consumed[slot] > 0) {
+            // NeoForge's stack hook preserves component-sensitive container behavior.
+            ItemStack remainder = before[slot].copyWithCount(1).getCraftingRemainingItem();
+            if (!remainder.isEmpty()) products.add(remainder.copyWithCount(Math.multiplyExact(remainder.getCount(), consumed[slot])));
+        }
+        return products;
     }
 
     private static FluidStack[] planFluids(MachineRecipe recipe, IFluidHandler fluids, FluidStack[] fluidState,
@@ -233,7 +243,7 @@ public final class RecipeTransaction {
         return true;
     }
 
-    private static ItemStack[] insertItems(List<ItemStack> outputs, IItemHandler items, ItemStack[] state, Predicate<ItemStack[]> acceptable) {
+    static ItemStack[] insertItems(List<ItemStack> outputs, IItemHandler items, ItemStack[] state, Predicate<ItemStack[]> acceptable) {
         var products = new ArrayList<ItemStack>();
         var amounts = new ArrayList<Long>();
         for (var output : outputs) {
@@ -246,6 +256,8 @@ public final class RecipeTransaction {
         }
         long[] required = new long[products.size()];
         int[][] capacities = new int[products.size()][state.length];
+        boolean[] mergeDestinations = new boolean[state.length];
+        for (int slot = 0; slot < state.length; slot++) mergeDestinations[slot] = !state[slot].isEmpty();
         for (int product = 0; product < products.size(); product++) {
             ItemStack stack = products.get(product);
             required[product] = amounts.get(product);
@@ -258,7 +270,7 @@ public final class RecipeTransaction {
                 }
             }
         }
-        int[][] allocation = OutputAllocation.allocate(required, capacities, acceptable == null ? null : candidate ->
+        int[][] allocation = OutputAllocation.allocate(required, capacities, mergeDestinations, acceptable == null ? null : candidate ->
                 acceptable.test(applyItems(products, state, candidate)));
         return allocation == null ? null : applyItems(products, state, allocation);
     }
@@ -271,7 +283,7 @@ public final class RecipeTransaction {
         return result;
     }
 
-    private static FluidStack[] insertFluids(List<FluidStack> outputs, IFluidHandler fluids, FluidStack[] state, Predicate<FluidStack[]> acceptable) {
+    static FluidStack[] insertFluids(List<FluidStack> outputs, IFluidHandler fluids, FluidStack[] state, Predicate<FluidStack[]> acceptable) {
         var products = new ArrayList<FluidStack>();
         var amounts = new ArrayList<Long>();
         for (var output : outputs) {
@@ -284,6 +296,8 @@ public final class RecipeTransaction {
         }
         long[] required = new long[products.size()];
         int[][] capacities = new int[products.size()][state.length];
+        boolean[] mergeDestinations = new boolean[state.length];
+        for (int tank = 0; tank < state.length; tank++) mergeDestinations[tank] = !state[tank].isEmpty();
         for (int product = 0; product < products.size(); product++) {
             FluidStack stack = products.get(product);
             required[product] = amounts.get(product);
@@ -296,7 +310,7 @@ public final class RecipeTransaction {
                 }
             }
         }
-        int[][] allocation = OutputAllocation.allocate(required, capacities, acceptable == null ? null : candidate ->
+        int[][] allocation = OutputAllocation.allocate(required, capacities, mergeDestinations, acceptable == null ? null : candidate ->
                 acceptable.test(applyFluids(products, state, candidate)));
         return allocation == null ? null : applyFluids(products, state, allocation);
     }

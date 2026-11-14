@@ -14,13 +14,18 @@ public final class MultiTank implements MutableRecipeFluids {
     private BiPredicate<Integer, FluidStack> validator = (tank, fluid) -> true;
 
     public MultiTank(Runnable changed, int... capacities) {
+        this(changed, capacities, (capacity, callback) -> new FluidTank(capacity) {
+            @Override protected void onContentsChanged() { callback.run(); }
+        });
+    }
+
+    public MultiTank(Runnable changed, int[] capacities, java.util.function.BiFunction<Integer, Runnable, FluidTank> factory) {
         this.changed = changed;
         tanks = new FluidTank[capacities.length];
         for (int i = 0; i < capacities.length; i++) {
             final int index = i;
-            tanks[i] = new FluidTank(capacities[i], stack -> validator.test(index, stack)) {
-                @Override protected void onContentsChanged() { changed.run(); }
-            };
+            tanks[i] = factory.apply(capacities[i], changed);
+            tanks[i].setValidator(stack -> validator.test(index, stack));
         }
     }
 

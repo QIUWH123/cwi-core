@@ -1,0 +1,172 @@
+{
+  "format": 1,
+  "artifacts": [
+    {
+      "path": "libs/compile/Registrate-MC1.21-1.3.0+67.jar",
+      "sha256": "510f4041c41739f1d8ea8850ab8364d3e3a5fada8529beed5d9f479e2523db52",
+      "urls": []
+    },
+    {
+      "path": "libs/compile/annotations-24.0.1.jar",
+      "sha256": "61666dbce7e42e6c85b43c04fcfb8293a21dcb55b3c80e869270ce42c01a6b35",
+      "urls": []
+    },
+    {
+      "path": "libs/compile/fabric-api-base-0.4.42+d1308ded19.jar",
+      "sha256": "729aef08d1df36c2f04fbf52ee4d92a7d29e33047865a8a8cf5546ebeac687e0",
+      "urls": []
+    },
+    {
+      "path": "libs/compile/fabric-renderer-api-v1-3.4.1+9125b6dc19.jar",
+      "sha256": "aba3e2dc8d670eae242a75c5ae961acbb542792ac587ca3a3b4b177bcbb9cda7",
+      "urls": []
+    },
+    {
+      "path": "libs/compile/flywheel-neoforge-1.21.1-1.0.6.jar",
+      "sha256": "31dda15c205eb596d3b3449ef03f6af7363a6cd35b3da4bfe916b304f9e5337e",
+      "urls": []
+    },
+    {
+      "path": "libs/compile/net.caffeinemc.sodium-neoforge-0.8.13+mc1.21.1-mod.jar",
+      "sha256": "d71acbffafd3d177add7624710114d8570cdd70d5553a2b5c8ab371852c59ce3",
+      "urls": []
+    },
+    {
+      "path": "libs/compile/ponder-neoforge-1.0.82+mc1.21.1.jar",
+      "sha256": "0cf4611ad853042b689ac386184c5bbe02950efcffddb49e5f604e82baddb0dc",
+      "urls": []
+    },
+    {
+      "path": "libs/optional/FarmersDelight-1.21.1-1.3.4.jar",
+      "sha256": "139ad7696462c89c03eea463f805abffa552526c5dadaadae221dd9624cb197c",
+      "urls": [
+        "https://cdn.modrinth.com/data/R2OftAxM/versions/XTVZDOol/FarmersDelight-1.21.1-1.3.4.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/ProbeJS-8.0.3.jar",
+      "sha256": "afb957ce00611cfc7de4bb33ac1ac8ea1d880c741ac14b9c67876b207b1377e7",
+      "urls": [
+        "https://cdn.modrinth.com/data/JJNYRb4B/versions/xC9KUA7R/ProbeJS-8.0.3.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/architectury-13.0.11-neoforge.jar",
+      "sha256": "9cc92f2c09533fc5482c60f993bd891c655a0e32b637037cdcb7c2b23adedeeb",
+      "urls": [
+        "https://cdn.modrinth.com/data/lhGA9TYQ/versions/1IiqEQGl/architectury-13.0.11-neoforge.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/azimuth-1.4.10.jar",
+      "sha256": "e9f56d10a6ae56c8d02d2e9e1668c7b70d545d8e20cf4972f0710e9b01989d8a",
+      "urls": [
+        "https://cdn.modrinth.com/data/RpH8tmT1/versions/dxtZVosY/azimuth-1.4.10.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/bits_n_bobs-2.3.5.jar",
+      "sha256": "3e1647383c6ed1d629b6f20210179d5870bcbf8ba2a2a0ec58af69b53513db68",
+      "urls": [
+        "https://cdn.modrinth.com/data/T8bvmqVZ/versions/g9Lmjjc5/bits_n_bobs-2.3.5.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/create_power_loader-2.0.5-mc1.21.1.jar",
+      "sha256": "69fb0433dcba1597e7fbc06b2731ebd441f8ed99e20d8ec798d852d6865d1bd7",
+      "urls": [
+        "https://cdn.modrinth.com/data/wPQ6GgFE/versions/3Y4r0ItR/create_power_loader-2.0.5-mc1.21.1.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/create_ratatouille-1.21.1-1.4.0.jar",
+      "sha256": "718725af78207805901df06f5dbcbf5f5f30fb6def1795b07ff0b60c653df194",
+      "urls": [
+        "https://cdn.modrinth.com/data/XM0ifg8q/versions/c81IeQl2/create_ratatouille-1.21.1-1.4.0.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/createaddition-1.7.2.jar",
+      "sha256": "71e9c3ac39089e72c1e47a129a44e41eb55efc9534eecfdead8da8fb64313414",
+      "urls": []
+    },
+    {
+      "path": "libs/optional/createdieselgenerators-1.21.1-1.3.15.jar",
+      "sha256": "56ef1d574278fc311f1ffa223dbd613077b899354a18d01ae8dca2578a4e2990",
+      "urls": [
+        "https://cdn.modrinth.com/data/ZM3tt6p1/versions/UoPH8lO1/createdieselgenerators-1.21.1-1.3.15.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/createmetallurgy-1.0.3-1.21.1.jar",
+      "sha256": "8f1c30c9f800c367a40715e8e6662f736f4547737987dfc30c10172b89b5d93f",
+      "urls": [
+        "https://cdn.modrinth.com/data/Soft45xC/versions/4RhIMmaJ/createmetallurgy-1.0.3-1.21.1.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/jei-1.21.1-neoforge-19.64.0.455.jar",
+      "sha256": "f7a9de3d7ee07eed8d293a1a1a0f6afaac556eb43c103523457bd07ebb551e7b",
+      "urls": [
+        "https://cdn.modrinth.com/data/u6dRKJwZ/versions/iv3KiVkE/jei-1.21.1-neoforge-19.64.0.455.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/kubejs-create-neoforge-2101.3.1-build.18.jar",
+      "sha256": "60fab77c339e5757a97a9a1e2d4019ed2a610bd46583d4353c9a13596e01e614",
+      "urls": []
+    },
+    {
+      "path": "libs/optional/powergrid-mc1.21.1-0.6.2.jar",
+      "sha256": "e40d67a874431925d502af88e85064883c67936cfd689033d7df560cffcf19e7",
+      "urls": [
+        "https://cdn.modrinth.com/data/eWiBLJ9R/versions/jCkPHjmP/powergrid-mc1.21.1-0.6.2.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/rubberworks-neoforge-1.21.1-1.1.4.jar",
+      "sha256": "ee2b26eb732ca1dda1e1923e5766428b19c061ca6032cfd13825ff488c3dbb35",
+      "urls": [
+        "https://cdn.modrinth.com/data/v2rl0YB8/versions/OrJgSgjC/rubberworks-neoforge-1.21.1-1.1.4.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/struts-1.3.1.jar",
+      "sha256": "21002a8b6881a3d08da74f03f29ab23551db50d755d7e75b8b94847511d9a863",
+      "urls": [
+        "https://cdn.modrinth.com/data/sHO3MhQx/versions/BOTN7zzN/struts-1.3.1.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/tfmg-1.21.1-1.3.3a-community.jar",
+      "sha256": "74b2d3ce7628a6d97c55c4999f376d77c111897c30b9c76ee86d2f7803101853",
+      "urls": [
+        "https://github.com/Metallurgists-of-Create/Create-TFMG-CE/releases/download/v1.3.3a/tfmg-1.21.1-1.3.3a-community.jar"
+      ]
+    },
+    {
+      "path": "libs/optional/vintageimprovements-1.21.1-0.0.0.8.jar",
+      "sha256": "91e6f43d8b4e30d8ff8da16f999c4ff9c879f9f9d4da331c696d6cf1b3f5922c",
+      "urls": []
+    },
+    {
+      "path": "libs/runtime/create-1.21.1-6.0.10.jar",
+      "sha256": "ef87fe5709f1ba1f5b8bb20a2925b5afb4669e178fd6d8bf10c167759eefe37a",
+      "urls": [
+        "https://cdn.modrinth.com/data/LNytGWDc/versions/UjX6dr61/create-1.21.1-6.0.10.jar"
+      ]
+    },
+    {
+      "path": "libs/runtime/kubejs-neoforge-2101.7.2-build.381.jar",
+      "sha256": "07d8cb7ac1f7ef81f17ae00bfd84c92c18ac0398e83e64a27d91717969316bc0",
+      "urls": [
+        "https://cdn.modrinth.com/data/umyGl7zF/versions/GDXCpKlp/kubejs-neoforge-2101.7.2-build.381.jar"
+      ]
+    },
+    {
+      "path": "libs/runtime/rhino-2101.2.7-build.85.jar",
+      "sha256": "95df92ce578b2504cb16d8c9fc285303bf062eb15452246a18e57b7cf091c19a",
+      "urls": []
+    }
+  ]
+}

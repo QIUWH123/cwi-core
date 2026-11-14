@@ -7,21 +7,21 @@ import dev.latvian.mods.kubejs.event.KubeEvent;
 import dev.latvian.mods.kubejs.recipe.RecipesKubeEvent;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.util.HideFromJS;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.quiwh.cwi.equipment.EquipmentUpgradeRecipe;
-import net.quiwh.cwi.equipment.UpgradeIngredient;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.quiwh.cwi.compat.kubejs.CwiUpgradeIngredientComponent;
+import net.quiwh.cwi.equipment.EquipmentUpgradeRecipe;
+import net.quiwh.cwi.equipment.UpgradeIngredient;
 
 /** Fresh, per-resource-reload material and upgrade definitions. No global client/server state. */
 public final class EquipmentUpgradeEvent implements KubeEvent {

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "cwi:block/chain_conveyor_carriage/block",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "cwi:block/chain_conveyor_carriage/block"
+    },
+    "facing=south": {
+      "model": "cwi:block/chain_conveyor_carriage/block",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "cwi:block/chain_conveyor_carriage/block",
+      "y": 270
+    }
+  }
+}

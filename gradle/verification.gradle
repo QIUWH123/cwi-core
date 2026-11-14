@@ -1,0 +1,101 @@
+import groovy.json.JsonOutput
+import java.util.zip.ZipFile
+
+// Native client contracts compile separately and are never registered as mod/test sources or shipped.
+sourceSets {
+    clientTest {
+        compileClasspath += sourceSets.main.output + sourceSets.test.compileClasspath
+        runtimeClasspath += compileClasspath
+    }
+}
+def java21 = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+tasks.register('prepareClientContracts') {
+    dependsOn 'clientTestClasses', 'createMinecraftArtifacts'
+    doLast {
+        def resources = file("build/moddev/artifacts/neoforge-${neoforge_version}-client-extra-aka-minecraft-resources.jar")
+        if (!resources.isFile()) throw new GradleException("Minecraft client resources missing: ${resources}")
+        def config = file('build/client-contracts/environment.json')
+        config.parentFile.mkdirs()
+        config.text = JsonOutput.prettyPrint(JsonOutput.toJson([
+                java: java21.get().executablePath.asFile.absolutePath,
+                classpath: (sourceSets.clientTest.runtimeClasspath + configurations.clientLegacyClasspath).asPath + File.pathSeparator + resources.absolutePath,
+                assets: providers.gradleProperty('clientAssets').map { file(it).absolutePath }.orNull,
+                classes: sourceSets.main.output.classesDirs.singleFile.absolutePath])) + '\n'
+    }
+}
+tasks.register('verifyClientContracts', Exec) {
+    group = 'verification'
+    description = 'Run exact-binary emissive, rolling, Vintage and world-spout client contracts without a window.'
+    dependsOn 'prepareClientContracts'
+    commandLine providers.gradleProperty('pythonExecutable').getOrElse('python3'), 'src/clientTest/run_contracts.py'
+}
+tasks.register('verifyResourceDefinitions', Exec) {
+    group = 'verification'
+    description = 'Resolve bundled model/blockstate/particle/audio references and optionally check external KubeJS textures.'
+    dependsOn 'prepareClientContracts'
+    commandLine providers.gradleProperty('pythonExecutable').getOrElse('python3'), 'src/clientTest/verify_resources.py'
+}
+tasks.register('verifyCore') {
+    group = 'verification'
+    description = 'Run pure checks plus native machine, save, automation and reload GameTests.'
+    dependsOn 'check', 'runGameTestServer'
+}
+tasks.register('verifyIntegrations') {
+    group = 'verification'
+    description = 'Run all pinned optional integration GameTests and check the requested test matrix.'
+    dependsOn 'verifyCore'
+    doFirst {
+        if (!fullVerification) throw new GradleException('Use the full task name verifyIntegrations or verifyRelease to select all integration dependencies.')
+    }
+}
+tasks.register('verifyJar') {
+    group = 'verification'
+    description = 'Check version agreement and exclude private data, textures, tests and third-party classes.'
+    dependsOn 'jar'
+    doLast {
+        def archive = tasks.named('jar', Jar).get().archiveFile.get().asFile
+        if (archive.name != "${mod_archive_name}-${project.version}.jar" || project.version.toString().contains('+1.21.1'))
+            throw new GradleException('Core release must use cwi-core and its own version without the Minecraft suffix')
+        def testEntries = new HashSet<String>()
+        (sourceSets.test.output + sourceSets.clientTest.output).files.findAll { it.isDirectory() }.each { directory ->
+            fileTree(directory).files.each { testEntries.add(directory.toPath().relativize(it.toPath()).toString().replace(File.separator, '/')) }
+        }
+        def mainEntries = [:]
+        sourceSets.main.output.files.findAll { it.isDirectory() }.each { directory ->
+            fileTree(directory).files.each { mainEntries[directory.toPath().relativize(it.toPath()).toString().replace(File.separator, '/')] = it }
+        }
+        new ZipFile(archive).withCloseable { zip ->
+            def names = zip.entries().collect { it.name }
+            def forbidden = names.findAll { name ->
+                (testEntries.contains(name) && !mainEntries.containsKey(name)) || name.contains('.DS_Store') ||
+                name.startsWith('docs/') || name.startsWith('tools/') || name.startsWith('pack/') ||
+                name.startsWith('data/cwi/recipe/contracts/') || name.contains('GameTests') ||
+                (name.startsWith('assets/') && name.contains('/textures/')) ||
+                (name.endsWith('.class') && !name.startsWith('net/quiwh/cwi/'))
+            }
+            if (!forbidden.isEmpty()) throw new GradleException("Unexpected JAR entries: ${forbidden}")
+            // Test packs deliberately override production tag paths. Verify the actual bytes
+            // at shared paths rather than rejecting valid production resources by name alone.
+            names.findAll { mainEntries.containsKey(it) }.each { name ->
+                if (!Arrays.equals(zip.getInputStream(zip.getEntry(name)).bytes, mainEntries[name].bytes))
+                    throw new GradleException("JAR differs from compiled production output: ${name}")
+            }
+            def metadata = zip.getInputStream(zip.getEntry('META-INF/neoforge.mods.toml')).getText('UTF-8')
+            def manifest = new java.util.jar.Manifest(zip.getInputStream(zip.getEntry('META-INF/MANIFEST.MF')))
+            def buildInfo = new Properties()
+            buildInfo.load(zip.getInputStream(zip.getEntry('META-INF/cwi-build.properties')))
+            if (!metadata.contains('version="' + project.version + '"') ||
+                    manifest.mainAttributes.getValue('Implementation-Version') != project.version.toString() ||
+                    buildInfo.getProperty('version') != project.version.toString() ||
+                    !(buildInfo.getProperty('source_sha256', '') ==~ /[0-9a-f]{64}/))
+                throw new GradleException('JAR filename, loader metadata and manifest versions disagree')
+            logger.lifecycle("Verified ${archive.name}: ${names.size()} entries, version ${project.version}")
+        }
+    }
+}
+tasks.register('verifyRelease') {
+    group = 'verification'
+    description = 'Run the integration matrix, native client contracts and distributable JAR audit.'
+    dependsOn 'verifyIntegrations', 'verifyClientContracts', 'verifyResourceDefinitions', 'verifyJar'
+}
+if (!providers.gradleProperty('offlineTarget').isPresent()) tasks.named('build') { dependsOn 'verifyRelease' }

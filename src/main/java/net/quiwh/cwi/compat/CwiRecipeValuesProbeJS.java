@@ -1,38 +1,45 @@
 package net.quiwh.cwi.compat;
 
-import java.util.*;
-import dev.latvian.mods.kubejs.plugin.builtin.wrapper.ItemWrapper;
 import dev.latvian.mods.kubejs.fluid.FluidWrapper;
+import dev.latvian.mods.kubejs.plugin.builtin.wrapper.ItemWrapper;
+import java.util.*;
+import moe.wolfgirl.probejs.plugin.Priority;
+import moe.wolfgirl.probejs.plugin.ProbeJSPlugin;
+import moe.wolfgirl.probejs.plugin.builtins.Bindings;
+import moe.wolfgirl.probejs.typescript.ClassPath;
+import moe.wolfgirl.probejs.typescript.base.DocumentRegistrar;
+import moe.wolfgirl.probejs.typescript.document.base.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
+import net.quiwh.cwi.compat.probejs.CwiRecipeValueProbeSchemas;
 import net.quiwh.cwi.compat.recipevalue.*;
-import moe.wolfgirl.probejs.plugin.ProbeJSPlugin;
-import moe.wolfgirl.probejs.plugin.Priority;
-import moe.wolfgirl.probejs.plugin.builtins.Bindings;
-import moe.wolfgirl.probejs.typescript.ClassPath;
-import moe.wolfgirl.probejs.typescript.base.DocumentRegistrar;
-import moe.wolfgirl.probejs.typescript.document.base.*;
 
 /** Conditional plugin entry: no ProbeJS types are loaded when ProbeJS is absent. */
 public final class CwiRecipeValuesProbeJS extends ProbeJSPlugin {
     @Override public Set<Class<?>> provideClassForDiscovery() {
-        return Set.of(ItemRecipeValue.class, FluidRecipeValue.class, ItemWrapper.class, FluidWrapper.class,
+        return Set.of(net.quiwh.cwi.pollution.GasProfile.Builder.class, net.quiwh.cwi.pollution.GasProfile.RouteBuilder.class,
+                GasConfigurationEvent.class, dev.latvian.mods.kubejs.fluid.FluidBuilder.class, ItemRecipeValue.class, FluidRecipeValue.class, ItemWrapper.class, FluidWrapper.class,
                 ItemStack.class, Ingredient.class, SizedIngredient.class, FluidStack.class, FluidIngredient.class, SizedFluidIngredient.class);
     }
     @Override public void transformClass(moe.wolfgirl.probejs.typescript.Documents.ClassDocument entry) {
+        net.quiwh.cwi.compat.probejs.CwiGasProbeTypes.transform(entry);
         Class<?> type = entry.classInfo().clazz();
         if (type != ItemRecipeValue.class && type != FluidRecipeValue.class) return;
         for (Code member : entry.document().members) {
-            if (!(member instanceof moe.wolfgirl.probejs.typescript.document.members.MethodDecl method) || method.params.size() != 1) continue;
+            if (!(member instanceof moe.wolfgirl.probejs.typescript.document.members.MethodDecl method) || method.params.isEmpty()) continue;
             Type parameter = switch (method.name) {
-                case "withChance", "withWeight" -> moe.wolfgirl.probejs.typescript.document.Types.NUMBER;
-                case "perTick" -> moe.wolfgirl.probejs.typescript.document.Types.BOOLEAN;
+                case "withChance", "withWeight", "damage", "consumeEnergy" -> moe.wolfgirl.probejs.typescript.document.Types.NUMBER;
+                case "perTick" -> method.params.size() == 2 ? moe.wolfgirl.probejs.typescript.document.Types.NUMBER
+                        : moe.wolfgirl.probejs.typescript.document.Types.union(List.of(moe.wolfgirl.probejs.typescript.document.Types.NUMBER, moe.wolfgirl.probejs.typescript.document.Types.BOOLEAN));
                 default -> null;
             };
+            if (method.name.equals("perTick") && method.params.size() == 2) method.params.set(1,
+                    new moe.wolfgirl.probejs.typescript.document.members.ParamDecl(method.params.get(1).name,
+                            moe.wolfgirl.probejs.typescript.document.Types.raw("\"working\" | \"recipe\"")));
             if (parameter != null) method.params.set(0, new moe.wolfgirl.probejs.typescript.document.members.ParamDecl(method.params.getFirst().name, parameter));
         }
     }

@@ -26,6 +26,21 @@ public final class FurnaceContractTest {
         require(FurnaceHeat.durationFactor(FurnaceHeat.approach(1199,15,0)) == .625, "Snap updates speed"); checks++;
         require(FurnaceHeat.stage(299.99) == 0 && FurnaceHeat.stage(300) == 1 && FurnaceHeat.stage(1900) == 3, "Heat boundaries"); checks++;
         require(FurnaceHeat.durationFactor(2400) == .25 && FurnaceHeat.sanitize(Double.NaN) == 0, "Persisted heat bounded"); checks++;
+        var scanner = new FurnaceStructure.Scanner();
+        int[] visits = new int[200];
+        boolean[] broken = {false};
+        FurnaceStructure.Grid grid = (r, u, b) -> {
+            int index = (u + 1) * 25 + (b + 1) * 5 + r + 2;
+            require(++visits[index] == 1, "Overlapping height candidates read each cell at most once per call");
+            return broken[0] && r == 0 && u == -1 && b == 0 ? Cell.AIR : blueprint(r, u, b, 4, Cell.CAST);
+        };
+        var first = scanner.scan(grid); checks++;
+        java.util.Arrays.fill(visits, 0);
+        require(first != null && scanner.scan(grid) == first, "Unchanged cells reuse the immutable structure match"); checks++;
+        broken[0] = true; java.util.Arrays.fill(visits, 0);
+        require(scanner.scan(grid) == null, "A broken cell invalidates the match on the very next call"); checks++;
+        broken[0] = false; java.util.Arrays.fill(visits, 0);
+        require(scanner.scan(grid) != null, "Repair immediately rebuilds a failed match"); checks++;
         System.out.println("Furnace contracts: " + checks + " checks passed");
     }
 

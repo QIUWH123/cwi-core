@@ -326,7 +326,7 @@ public final class MachineCreateParityGameTests {
             MixingVesselBlockEntity core=h.getBlockEntity(corePos); core.tick();
             h.assertTrue(h.getBlockState(nativePos).is(AllBlocks.SHAFT.get()),"Create shaft survives allowed512RPM");
             h.assertTrue(h.getBlockState(corePos).is(MachineBlocks.MIXING_VESSEL.get()),"Core survives configured512RPM allowance");
-            h.assertTrue(MachineKinetics.mixerDuration(100,512)==50,"processing uses the256RPM timing reference within the configured512RPM limit");
+            h.assertTrue(MachineKinetics.mixerDuration(100,512)==1,"processing follows Create active timing within the configured512RPM limit");
         } finally {
             for(BlockPos p:List.of(corePos,nativePos,largePos,smallPos,motorPos)) h.setBlock(p,Blocks.AIR);
             config.set(previous);

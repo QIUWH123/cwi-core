@@ -1,0 +1,58 @@
+// Pure contracts and native GameTest completion/error gates.
+def contracts = [
+        testFanMode: [main: 'net.quiwh.cwi.FanModeContractTest', exclude: []],
+        testRegistrationRulesWithoutKubeJS: [main: 'net.quiwh.cwi.RegistrationRulesWithoutKubeJSTest', exclude: ['kubejs-', 'rhino-']],
+        testShadowRulesWithoutMods: [main: 'net.quiwh.cwi.ShadowRulesWithoutModsTest', exclude: ['kubejs-', 'rhino-', 'shadowdrop-']],
+        testFurnaceContracts: [main: 'net.quiwh.cwi.FurnaceContractTest', exclude: []],
+        testMachineKinetics: [main: 'net.quiwh.cwi.MachineKineticsTest', exclude: []],
+        testGasProfileLimits: [main: 'net.quiwh.cwi.GasProfileLimitContractTest', exclude: []],
+        testInputAllocation: [main: 'net.quiwh.cwi.InputAllocationContractTest', exclude: []],
+        testOutputAllocation: [main: 'net.quiwh.cwi.machine.OutputAllocationContractTest', exclude: []],
+        testIntegrationSelection: [main: 'net.quiwh.cwi.IntegrationSelectionContractTest', exclude: []]
+]
+
+contracts.each { taskName, contract ->
+    tasks.register(taskName, JavaExec) {
+        group = 'verification'
+        dependsOn 'testClasses'
+        classpath = sourceSets.test.runtimeClasspath.filter { entry ->
+            !contract.exclude.any { entry.name.startsWith(it) }
+        }
+        mainClass = contract.main
+    }
+}
+tasks.named('check') { dependsOn contracts.keySet() }
+
+// Native tests use explicit entry points rather than JUnit discovery.
+tasks.named('test', Test) { failOnNoDiscoveredTests = false }
+
+if (!providers.gradleProperty('offlineTarget').isPresent()) {
+    tasks.named('check') { dependsOn 'runGameTestServer' }
+    tasks.named('runGameTestServer') {
+        dependsOn 'prepareMachineGameTestScripts', 'prepareHammerGameTestScript'
+        // A loader crash can exit Java with code 0 before the GameTest runner starts.
+        // Require fresh test completion so IDEA does not report that as success.
+        doFirst {
+            ext.cwiGameTestStartedAt = System.currentTimeMillis()
+        }
+        doLast {
+            def resultLog = file('build/native-machine-test-run/logs/latest.log')
+            if (!resultLog.isFile() || resultLog.lastModified() < cwiGameTestStartedAt
+                    || !(resultLog.text =~ /All [1-9][0-9]* required tests passed/).find()) {
+                throw new GradleException('GameTests did not finish successfully. See build/native-machine-test-run/logs/latest.log.')
+            }
+        }
+        if (fullVerification) {
+            systemProperty 'cwi.verification.mods', 'create,kubejs,kubejs_create,vintageimprovements,rubberworks,createaddition,createmetallurgy,tfmg,createdieselgenerators,probejs,powergrid,create_power_loader'
+            systemProperty 'cwi.verification.tests', 'examplesloadandreload,retainedorerecipesload,rollingexecutesloopsandsurvivesreload,vateightslotandlegacysaves,foundrynewandlegacysaves,centrifugeupdatesstructuralcomparatorautomatically,vibratingproducesnineandwaitsforspace'
+        }
+        doLast {
+            def log = file('build/native-machine-test-run/logs/latest.log').text
+            if (log.contains('Parsing error loading recipe'))
+                throw new GradleException('Native recipe parsing failed despite completed GameTests. See the test log.')
+            def scriptLoads = (log =~ /Loaded \d+\/\d+ KubeJS (?:startup|server) scripts in .*? with (\d+) errors/)
+            scriptLoads.each { match -> if (match[1] != '0') throw new GradleException('KubeJS script loading failed') }
+            if ((log =~ /with [1-9][0-9]* failed recipes/).find()) throw new GradleException('Scripted recipe generation failed')
+        }
+    }
+}

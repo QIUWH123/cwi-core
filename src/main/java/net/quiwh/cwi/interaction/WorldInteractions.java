@@ -5,6 +5,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
@@ -14,8 +15,12 @@ public final class WorldInteractions {
         NeoForge.EVENT_BUS.addListener(WorldInteractions::afterEntity);
         NeoForge.EVENT_BUS.addListener(WorldInteractions::afterPlayer);
         NeoForge.EVENT_BUS.addListener(WorldInteractions::afterDamage);
+        NeoForge.EVENT_BUS.addListener(WorldInteractions::preventNetherPortal);
         NeoForge.EVENT_BUS.addListener(ContainerLocks::interact);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.TagsUpdatedEvent event) -> InteractionRecipes.invalidate());
+    }
+    private static void preventNetherPortal(BlockEvent.PortalSpawnEvent event) {
+        event.setCanceled(true);
     }
     private static void beforeEntity(EntityTickEvent.Pre event) {
         if (event.getEntity() instanceof ItemEntity item) ItemImpacts.beforeTick(item);

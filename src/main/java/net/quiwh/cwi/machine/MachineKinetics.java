@@ -10,7 +10,10 @@ public final class MachineKinetics {
     }
     public static int mixerDuration(int baseTicks, float rpm) {
         if (!canWork(rpm, false, 0) || baseTicks < 1) return 0;
-        return (int)Math.min(Integer.MAX_VALUE, Math.max(1, Math.floor(baseTicks * 256d / Math.abs(rpm))));
+        // MechanicalMixerBlockEntity's active stage; the vessel has no lowering/raising head.
+        int speedSteps = net.minecraft.util.Mth.log2(Math.max(1, (int)(512f / Math.abs(rpm))));
+        long stepTicks = net.minecraft.util.Mth.ceil(baseTicks / 100f * 15f);
+        return (int)Math.min(Integer.MAX_VALUE, Math.max(1, speedSteps * stepTicks + 1));
     }
     public static int lavaBurst(int pumps, float rpm, boolean overstressed) {
         if (pumps < 1 || pumps > 3 || !canWork(rpm, overstressed, 128)) return 0;

@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "net.quiwh.cwi.mixin.interaction",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["SpoutingBehaviourMixin"],
+  "mixins": ["SpoutingBehaviourMixin", "PortalForcerMixin", "BaseFireBlockMixin"],
   "injectors": {"defaultRequire": 1}
 }

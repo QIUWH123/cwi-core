@@ -1,0 +1,27 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.quiwh.cwi.mixin.pollution",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "OpenPipeGasMixin",
+    "GasBucketMixin",
+    "GasFluidTypeMixin",
+    "GasTankSegmentMixin",
+    "GasTankHandlerMixin",
+    "GasTankBehaviourMixin",
+    "BasinGasMixin",
+    "diesel.BasinLidGasMixin",
+    "kubejs.FluidGasMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "plugin": "net.quiwh.cwi.mixin.pollution.GasMixinPlugin",
+  "client": [
+    "PipeGasParticlesMixin",
+    "GasTankRenderingMixin",
+    "ItemDrainGasRenderingMixin",
+    "GasParticleEngineMixin"
+  ]
+}

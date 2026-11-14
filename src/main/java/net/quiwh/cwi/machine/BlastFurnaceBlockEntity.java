@@ -1,6 +1,5 @@
 package net.quiwh.cwi.machine;
 
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,29 +42,40 @@ public final class BlastFurnaceBlockEntity extends MachineBlockEntity {
     private double temperature;
     private boolean formed, working, validating;
     private int armor, parallel, height, progress, duration, batch;
+    private VesselOperation operation;
     private long lastScan = Long.MIN_VALUE;
     private Set<BlockPos> hatches = Set.of();
     private ResourceLocation recipeId;
     private String fingerprint = "";
+    private final RecipeCandidates candidates = new RecipeCandidates();
+    private final FurnaceStructure.Scanner structureScanner = new FurnaceStructure.Scanner();
 
     private final IItemHandlerModifiable recipeItems = new IItemHandlerModifiable() {
-        public int getSlots() { return 8; }
+        public int getSlots() { return 14; }
         public ItemStack getStackInSlot(int slot) { return inventory.getStackInSlot(slot); }
         public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) { return stack; }
-        public ItemStack extractItem(int slot, int amount, boolean simulate) { return inventory.extractItem(slot,amount,simulate); }
+        public ItemStack extractItem(int slot, int amount, boolean simulate) { return slot < 8 ? inventory.extractItem(slot,amount,simulate) : ItemStack.EMPTY; }
         public int getSlotLimit(int slot) { return 64; }
-        public boolean isItemValid(int slot, ItemStack stack) { return false; }
+        public boolean isItemValid(int slot, ItemStack stack) { return slot >= 8; }
         public void setStackInSlot(int slot, ItemStack stack) { inventory.setStackInSlot(slot,stack); }
     };
     private final MutableRecipeFluids recipeFluids = new FluidView(0,6,true,true) {
         @Override public boolean canExtractTank(int tank) { return tank < 4; }
         @Override public boolean canInsertTank(int tank, FluidStack stack) { return tank >= 4; }
     };
+    private final IItemHandler hatchItems = new IItemHandler() {
+        public int getSlots() { return 14; }
+        public ItemStack getStackInSlot(int slot) { return inventory.getStackInSlot(slot); }
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) { return slot < 8 ? inventory.insertItem(slot, stack, simulate) : stack; }
+        public ItemStack extractItem(int slot, int amount, boolean simulate) { return inventory.extractItem(slot, amount, simulate); }
+        public int getSlotLimit(int slot) { return 64; }
+        public boolean isItemValid(int slot, ItemStack stack) { return slot < 8 && acceptsItem(slot, stack); }
+    };
     private final IFluidHandler inputFluids = new FluidView(0,4,true,true);
     private final IFluidHandler outputFluids = new FluidView(4,2,false,true);
 
     public BlastFurnaceBlockEntity(BlockPos pos, BlockState state) {
-        super(MachineBlocks.BLAST_FURNACE_ENTITY.get(), pos, state, 8, 3000,3000,3000,3000,3000,3000);
+        super(MachineBlocks.BLAST_FURNACE_ENTITY.get(), pos, state, 14, 3000,3000,3000,3000,3000,3000);
         tanks.setValidator((tank,fluid) -> tank >= 4 || (tank >= 2) == fluid.is(GASES));
     }
     private static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath("cwi",path); }
@@ -78,7 +88,8 @@ public final class BlastFurnaceBlockEntity extends MachineBlockEntity {
     public int progress() { return progress; }
     public int duration() { return duration; }
     public double temperature() { return temperature; }
-    public IItemHandler hatchItems() { return inventory; }
+    public IItemHandler hatchItems() { return hatchItems; }
+    @Override protected int storageVersion() { return 2; }
     public IFluidHandler hatchFluids() { return inputFluids; }
     @Override public void setBlockState(BlockState state) {
         Direction previousFacing = getBlockState().getValue(MachineBlock.FACING);
@@ -92,7 +103,7 @@ public final class BlastFurnaceBlockEntity extends MachineBlockEntity {
     @Override public float calculateStressApplied() { lastStressApplied = 0; return 0; }
     @Override protected boolean acceptsItem(int slot, ItemStack stack) {
         boolean coke = stack.is(COKE) || Set.of("tfmg:coal_coke", "tfmg:coal_coke_dust", "tfmg:coal_coke_block").contains(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
-        return (slot >= 4) == coke;
+        return slot < 8 && (slot >= 4) == coke;
     }
 
     private BlockPos at(int right, int up, int back) {
@@ -121,7 +132,7 @@ public final class BlastFurnaceBlockEntity extends MachineBlockEntity {
         validating = true;
         try {
             lastScan = level.getGameTime();
-            var match = FurnaceStructure.scan(this::classify);
+            var match = structureScanner.scan(this::classify);
             Set<BlockPos> next = new HashSet<>();
             if (match != null) for (var offset : match.hatches()) {
                 BlockPos pos = at(offset.right(),offset.up(),offset.back());
@@ -133,7 +144,8 @@ public final class BlastFurnaceBlockEntity extends MachineBlockEntity {
             for (BlockPos pos : next) if (level.getBlockEntity(pos) instanceof FurnaceHatchBlockEntity hatch) hatch.claim(worldPosition);
             boolean nextFormed = match != null;
             int nextArmor = nextFormed ? match.armor() : 0, nextParallel = nextFormed ? match.parallel() : 0;
-            if (formed != nextFormed || armor != nextArmor || parallel != nextParallel || !hatches.equals(next)) {
+            if (formed != nextFormed || armor != nextArmor || parallel != nextParallel
+                    || height != (nextFormed ? match.height() : 0) || !hatches.equals(next)) {
                 formed = nextFormed; armor = nextArmor; parallel = nextParallel; height = nextFormed ? match.height() : 0;
                 hatches = Set.copyOf(next); if (!formed) clearRecipe(); changed();
             }
@@ -153,9 +165,9 @@ public final class BlastFurnaceBlockEntity extends MachineBlockEntity {
     }
     private boolean heatMatches(MachineRecipe recipe) {
         int required = recipe.getRequiredHeat() == HeatCondition.SUPERHEATED ? 1900 : recipe.getRequiredHeat() == HeatCondition.HEATED ? 1200 : 0;
-        return temperature >= Math.max(required,recipe.minimumHeat());
+        return temperature >= Math.max(required,recipe.minimumHeat()) && temperature <= recipe.maximumHeat();
     }
-    private void clearRecipe() { recipeId = null; fingerprint = ""; progress = duration = batch = 0; setChanged(); }
+    private void clearRecipe() { operation = null; recipeId = null; fingerprint = ""; progress = duration = batch = 0; setChanged(); }
     private void setWorking(boolean value) {
         working = value;
         if (level != null && getBlockState().getValue(MachineBlock.WORKING) != value) {
@@ -176,21 +188,23 @@ public final class BlastFurnaceBlockEntity extends MachineBlockEntity {
         if (recipeId != null && (holder == null || holder.value().getType() != MachineRecipes.BLAST_FURNACE.recipeType()
                 || !holder.value().fingerprint(level.registryAccess()).equals(fingerprint))) { clearRecipe(); holder = null; }
         if (holder == null) {
-            holder = level.getRecipeManager().getAllRecipesFor(MachineRecipes.BLAST_FURNACE.recipeType()).stream()
-                    .sorted(Comparator.comparing(entry -> entry.id().toString())).filter(entry -> heatMatches(entry.value())
-                            && RecipeTransaction.matches(entry.value(),recipeItems,recipeFluids,1)).findFirst().orElse(null);
+            holder = candidates.find(level.getRecipeManager(), MachineRecipes.BLAST_FURNACE.recipeType(), recipeItems, recipeFluids)
+                    .stream().filter(entry -> heatMatches(entry.value())).findFirst().orElse(null);
             if (holder == null) { setWorking(false); return; }
             recipeId = holder.id(); fingerprint = holder.value().fingerprint(level.registryAccess());
-            batch = RecipeTransaction.maxBatch(holder.value(),recipeItems,recipeFluids,parallel);
+            batch = parallel;
+            while (batch > 0 && !VesselTransaction.eligible(holder.value(), recipeItems, recipeFluids, (ServerLevel)level, batch)) batch--;
+            if (batch == 0) { clearRecipe(); setWorking(false); return; }
+            operation = new VesselOperation(level.random.nextLong());
             duration = Math.max(1,(int)Math.floor(holder.value().getProcessingDuration() * FurnaceHeat.durationFactor(temperature))); progress = 0; changed();
         }
         var recipe = holder.value();
-        if (!RecipeTransaction.matches(recipe,recipeItems,recipeFluids,batch)) { clearRecipe(); setWorking(false); changed(); return; }
-        if (!heatMatches(recipe)) { progress = Math.max(0,progress - 2); setWorking(false); setChanged(); return; }
-        boolean finishing = progress + 1 >= duration;
-        boolean committed = finishing ? RecipeTransaction.finishTick(recipe,recipeItems,recipeFluids,batch,level.random)
-                : RecipeTransaction.tick(recipe,recipeItems,recipeFluids,batch,level.random);
-        if (!committed) { clearRecipe(); setWorking(false); return; }
+        if (!heatMatches(recipe)) { setWorking(false); return; }
+        operation.prepare(duration);
+        boolean finishing = operation.finishing();
+        if (!VesselTransaction.step(recipe, operation, recipeItems, recipeFluids, (ServerLevel)level, batch)) {
+            setChanged(); setWorking(false); return;
+        }
         setWorking(true); progress++; setChanged();
         if (temperature >= 60 && level.getGameTime() % 4 == 0 && level instanceof ServerLevel server) {
             BlockPos chimney = at(0,height - 2,1);
@@ -253,6 +267,7 @@ public final class BlastFurnaceBlockEntity extends MachineBlockEntity {
     @Override protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean client) {
         super.write(tag,registries,client); tag.putDouble("Temperature",temperature); tag.putBoolean("Formed",formed); tag.putInt("Armor",armor); tag.putInt("Parallel",parallel); tag.putInt("Height",height);
         if (recipeId != null) tag.putString("Recipe",recipeId.toString());
+        if (operation != null) tag.put("Operation", operation.save());
         tag.putString("Fingerprint",fingerprint); tag.putInt("Progress",progress); tag.putInt("Duration",duration); tag.putInt("Batch",batch); tag.putBoolean("Working",working);
     }
     @Override protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean client) {
@@ -260,6 +275,16 @@ public final class BlastFurnaceBlockEntity extends MachineBlockEntity {
         armor = Math.max(0,tag.getInt("Armor")); parallel = Math.clamp(tag.getInt("Parallel"),0,16); height = Math.clamp(tag.getInt("Height"),0,8);
         recipeId = tag.contains("Recipe") ? ResourceLocation.tryParse(tag.getString("Recipe")) : null; fingerprint = tag.getString("Fingerprint");
         duration = Math.max(1,tag.getInt("Duration")); progress = Math.clamp(tag.getInt("Progress"),0,duration); batch = Math.clamp(tag.getInt("Batch"),1,16);
+        operation = recipeId == null ? null : tag.contains("Operation") ? VesselOperation.load(tag.getCompound("Operation")) : null;
+        if (recipeId != null && operation == null) {
+            // Legacy ordinary jobs have not paid their inputs. Periodic legacy jobs cannot safely infer paid IO.
+            var old = client || level == null ? null : level.getRecipeManager().byKey(recipeId).map(RecipeHolder::value).orElse(null);
+            if (old instanceof MachineRecipe recipe && !recipe.periodic()) {
+                var state = new CompoundTag(); state.putLong("Seed", level.random.nextLong());
+                state.putDouble("Completed", progress / (double)duration); state.putDouble("Pending", -1); state.putInt("Ticks", progress);
+                operation = VesselOperation.load(state);
+            } else { recipeId = null; progress = batch = 0; }
+        }
         working = client && tag.getBoolean("Working"); lastScan = Long.MIN_VALUE;
     }
 

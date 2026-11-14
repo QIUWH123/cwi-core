@@ -13,8 +13,12 @@ public final class ItemRecipeValue extends RecipeValue {
                     Double chance, Double weight, Boolean timing) {
         super(source, id, snapshot, count, patch, chance, weight, timing);
     }
+    private ItemRecipeValue(Source source, ResourceLocation id, String snapshot, int count, boolean patch,
+                    Double chance, Double weight, Boolean timing, net.quiwh.cwi.machine.recipe.EntrySettings settings) {
+        super(source, id, snapshot, count, patch, chance, weight, timing, settings);
+    }
     @Override ItemRecipeValue copy(Double chance, Double weight, Boolean timing) {
-        return new ItemRecipeValue(source, id, snapshot, quantity, componentPatch, chance, weight, timing);
+        return new ItemRecipeValue(source, id, snapshot, quantity, componentPatch, chance, weight, timing, settings);
     }
     @Override boolean fluid() { return false; }
     public ItemRecipeValue withChance(Object probability) {
@@ -27,8 +31,24 @@ public final class ItemRecipeValue extends RecipeValue {
         if (n <= 0) throw new IllegalArgumentException("Weight must be positive");
         return copy(null, n, timing);
     }
-    public ItemRecipeValue perTick() { return perTick(true); }
-    public ItemRecipeValue perTick(Object enabled) { return copy(chance, weight, bool(enabled)); }
+    public ItemRecipeValue perTick() { return perTick(1); }
+    public ItemRecipeValue perTick(Object interval) { return perTick(interval, "working"); }
+    public ItemRecipeValue perTick(Object interval, Object clock) {
+        var next = periodic(interval, clock, settings);
+        return new ItemRecipeValue(source, id, snapshot, quantity, componentPatch, chance, weight, next.periodic(), next);
+    }
+    public ItemRecipeValue catalyst() {
+        return new ItemRecipeValue(source, id, snapshot, quantity, componentPatch, chance, weight, timing,
+                new net.quiwh.cwi.machine.recipe.EntrySettings(settings.interval(), settings.clock(), true, settings.damage(), settings.energy()));
+    }
+    public ItemRecipeValue damage(Object amount) { return toolCost(amount, true); }
+    public ItemRecipeValue consumeEnergy(Object amount) { return toolCost(amount, false); }
+    private ItemRecipeValue toolCost(Object raw, boolean damage) {
+        int amount = RecipeValues.quantity(raw);
+        return new ItemRecipeValue(source, id, snapshot, quantity, componentPatch, chance, weight, timing,
+                new net.quiwh.cwi.machine.recipe.EntrySettings(settings.interval(), settings.clock(), settings.catalyst(),
+                        damage ? amount : settings.damage(), damage ? settings.energy() : amount));
+    }
     public ItemStack toStack(Context cx) { requireStack(); return stack(cx); }
     ItemStack stack(Context cx) {
         if (source == Source.TAG || source == Source.INGREDIENT)

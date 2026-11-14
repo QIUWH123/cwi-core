@@ -10,5 +10,7 @@ public final class CwiKubeJSEvents {
     public static final EventHandler BLOCK_REGISTRATION = GROUP.startup("blockRegistration", () -> RegistrationBlockEvent.class);
     public static final EventHandler SHADOW_DROP = GROUP.client("shadowDrop", () -> ShadowDropEvent.class);
 
+    public static final EventHandler GASES = GROUP.startup("gases", () -> GasConfigurationEvent.class);
+
     private CwiKubeJSEvents() {}
 }

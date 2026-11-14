@@ -11,6 +11,9 @@ import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 import java.util.List;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.quiwh.cwi.equipment.protection.HazardProtection;
+import net.quiwh.cwi.equipment.protection.ProtectiveEnchantments.Type;
 
 /** Typed immutable runtime definitions, constructed once by the native recipe codec. */
 public final class InteractionRules {
@@ -18,9 +21,9 @@ public final class InteractionRules {
     public record Impact(Ingredient input, double minHeight, List<ImpactAction> actions) implements Rule {}
     public record Effect(ResourceLocation id, int duration, int amplifier) {}
     public record InventoryHazard(Ingredient input, int interval, float damage, ResourceLocation damageType,
-                                  int fireTicks, List<Effect> effects) implements Rule {}
+                                  int fireTicks, List<Effect> effects, HazardProtection protection) implements Rule {}
     public record FluidHazard(FluidIngredient fluid, int interval, float damage, ResourceLocation damageType,
-                              int fireTicks, List<Effect> effects) implements Rule {}
+                              int fireTicks, List<Effect> effects, HazardProtection protection) implements Rule {}
     public record Toxin(Ingredient input, Ingredient additionalInput, double additionalWeight, int interval,
                         double retention, double scale, double threshold, String stateKey, ResourceLocation effect,
                         int duration, double meleeChance, int meleeDuration, double strongMeleeChance,
@@ -39,9 +42,9 @@ public final class InteractionRules {
                     r.number("min_height", 0, 0, 4096),
                     r.list("actions", 1, 64).stream().map(value -> ImpactAction.decode(r.child(value))).toList());
             case INVENTORY_HAZARD -> new InventoryHazard(r.value("input", Ingredient.CODEC_NONEMPTY), interval(r),
-                    damage(r), damageType(r), fireTicks(r), effects(r));
+                    damage(r), damageType(r), fireTicks(r), effects(r), protection(r));
             case FLUID_HAZARD -> new FluidHazard(r.value("fluid", FluidIngredient.CODEC_NON_EMPTY), interval(r),
-                    damage(r), damageType(r), fireTicks(r), effects(r));
+                    damage(r), damageType(r), fireTicks(r), effects(r), protection(r));
             case TOXIN_EXPOSURE -> new Toxin(r.value("input", Ingredient.CODEC_NONEMPTY),
                     r.has("additional_input") ? r.value("additional_input", Ingredient.CODEC_NONEMPTY) : Ingredient.EMPTY,
                     r.number("additional_weight", 9, 0, 1_000_000), interval(r),
@@ -62,6 +65,31 @@ public final class InteractionRules {
         };
         r.finish();
         return result;
+    }
+
+    private static HazardProtection protection(RuleReader<?> r) {
+        if (!r.has("protection")) return HazardProtection.NONE;
+        var id = r.id("protection");
+        Type type = switch (id.toString()) {
+            case "cwi:acid", "cwi:chemical", "cwi:chemical_sealing" -> Type.CHEMICAL_SEALING;
+            case "cwi:heat", "cwi:heat_shielding" -> Type.HEAT_SHIELDING;
+            default -> throw new IllegalArgumentException("Unknown or inactive hazard protection: " + id);
+        };
+        var slots = r.has("protection_slots") ? r.list("protection_slots", 1, 4).stream().map(value -> {
+            if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString())
+                throw new IllegalArgumentException("protection_slots must contain armor slot names");
+            return switch (value.getAsString()) {
+                case "head" -> EquipmentSlot.HEAD;
+                case "chest" -> EquipmentSlot.CHEST;
+                case "legs" -> EquipmentSlot.LEGS;
+                case "feet" -> EquipmentSlot.FEET;
+                default -> throw new IllegalArgumentException("Unknown armor protection slot: " + value);
+            };
+        }).toList() : List.<EquipmentSlot>of();
+        if (slots.stream().distinct().count() != slots.size())
+            throw new IllegalArgumentException("protection_slots cannot repeat a slot");
+        return new HazardProtection(type, r.integer("required_resistance", 4, 1, 16),
+                r.integer("durability_cost", 0, 0, 1_000_000), slots);
     }
 
     private static String stateKey(RuleReader<?> r) {

@@ -8,11 +8,15 @@ import org.jetbrains.annotations.Nullable;
 final class MachineRecipeValidation {
     static @Nullable String error(MachineRecipes.Entry entry, List<MachineRecipe.ItemInput> items,
                                   List<MachineRecipe.FluidInput> fluids, List<MachineRecipe.ItemOutput> outputs,
-                                  List<MachineRecipe.FluidOutput> fluidOutputs, float rpm, int heat, HeatCondition condition) {
+                                  List<MachineRecipe.FluidOutput> fluidOutputs, float rpm, int heat, int maximumHeat,
+                                  HeatCondition condition) {
         if (entry == MachineRecipes.BLAST_FURNACE) {
             if (rpm != 0) return "Blast furnace recipes cannot require RPM: the furnace has no kinetic input";
-            if (!outputs.isEmpty()) return "Blast furnace recipes support molten fluid outputs, not item outputs";
-        } else if (heat != 0 || condition != HeatCondition.NONE) {
+            if (items.stream().anyMatch(input -> input.settings().tool()))
+                return "Blast furnace recipes do not support durability or energy tool costs";
+            int required = condition == HeatCondition.SUPERHEATED ? 1900 : condition == HeatCondition.HEATED ? 1200 : 0;
+            if (maximumHeat < Math.max(required, heat)) return "Maximum furnace temperature cannot be below the required minimum temperature";
+        } else if (heat != 0 || maximumHeat != Integer.MAX_VALUE || condition != HeatCondition.NONE) {
             return "Kinetic incubator and mixing vessel recipes cannot require heat";
         }
         if (entry == MachineRecipes.INCUBATING) {

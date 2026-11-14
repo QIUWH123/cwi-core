@@ -1,5 +1,3 @@
-import groovy.json.JsonSlurper
-
 buildscript {
     if (!gradle.startParameter.projectProperties.containsKey('offlineTarget')) {
         repositories {
@@ -15,110 +13,18 @@ buildscript {
 apply plugin: 'java-library'
 apply plugin: 'idea'
 
-version = mod_version
+def buildNumber = providers.gradleProperty('buildNumber').getOrElse(java.time.format.DateTimeFormatter.ofPattern('yyyyMMddHHmmss').format(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC)))
+if (!(buildNumber ==~ /[A-Za-z0-9.-]+/)) throw new GradleException('buildNumber may contain only letters, digits, dots and hyphens')
+version = "${mod_version}.build.${buildNumber}"
+ext.fullVerification = gradle.startParameter.taskNames.any { it.tokenize(':').last() in ['build', 'verifyIntegrations', 'verifyRelease'] }
+apply from: 'gradle/dependencies.gradle'
 group = mod_group_id
-base { archivesName = mod_id }
+base { archivesName = mod_archive_name }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 repositories { mavenCentral() }
 
-def offlineTarget = providers.gradleProperty('offlineTarget').isPresent()
-if (offlineTarget) {
-    // Diagnostic compilation against the installed, named target. No transformed runtime.
-    def configFile = file('tools/local-target.json')
-    if (!configFile.isFile()) throw new GradleException('Prepare tools/local-target.json before offline target compilation.')
-    def localConfig = new JsonSlurper().parse(configFile)
-    def classpathFile = file(localConfig.classpath_file)
-    if (!classpathFile.isFile()) throw new GradleException('The configured target classpath does not exist.')
-    dependencies { implementation files(classpathFile.text.trim().split(File.pathSeparator)) }
-    tasks.named('jar') {
-        doFirst { throw new GradleException('offlineTarget supports compile/check only. Use the NeoForge development build and runtime validation for a distributable JAR.') }
-    }
-} else {
-    apply plugin: 'net.neoforged.moddev'
-    neoForge {
-        version = neoforge_version
-        addModdingDependenciesTo sourceSets.test
-        runs {
-            client { client() }
-            machineClient {
-                client()
-                gameDirectory = file('build/native-machine-client-run')
-            }
-            server { server(); programArgument '--nogui' }
-            gameTestServer {
-                type = 'gameTestServer'
-                sourceSet = sourceSets.test
-                gameDirectory = file('build/native-machine-test-run')
-            }
-            configureEach {
-                systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-            }
-        }
-        mods {
-            "${mod_id}" {
-                sourceSet sourceSets.main
-                sourceSet sourceSets.test
-            }
-        }
-    }
-    // Released 1.21.1 mods already use official names. Keep verified local jars private.
-    configurations {
-        localRuntime
-        testCompileOnly.extendsFrom compileOnly
-    }
-    configurations.runtimeClasspath.extendsFrom(configurations.localRuntime)
-    dependencies {
-        implementation fileTree(dir: 'libs/runtime', include: ['*.jar'])
-        compileOnly fileTree(dir: 'libs/compile', include: ['*.jar'])
-        compileOnly fileTree(dir: 'libs/optional', include: ['*.jar'])
-        if (providers.gradleProperty('schemaVerification').isPresent()) {
-            def schemaMods = fileTree(dir: 'libs/optional', include: [
-                    'kubejs-create-*.jar', 'createaddition-*.jar', 'createmetallurgy-*.jar',
-                    'vintageimprovements-*.jar', 'rubberworks-*.jar', 'tfmg-*.jar',
-                    'createdieselgenerators-*.jar', 'petrochem-*.jar', 'create_ratatouille-*.jar',
-                    'FarmersDelight-*.jar', 'Lychee-*.jar', 'Kiwi-*.jar'])
-            localRuntime schemaMods
-            testRuntimeOnly schemaMods
-        }
-        if (providers.gradleProperty('machineClientVerification').isPresent()) {
-            localRuntime files('libs/optional/jei-1.21.1-neoforge-19.64.0.455.jar')
-        }
-        if (providers.gradleProperty('conversionVerification').isPresent()) {
-            def conversionMods = fileTree(dir: 'libs/optional', include: [
-                    'create_power_loader-*.jar', 'powergrid-*.jar', 'architectury-*.jar'])
-            localRuntime conversionMods
-            testRuntimeOnly conversionMods
-        }
-        if (providers.gradleProperty('recipeOutputCompatVerification').isPresent()) {
-            localRuntime files('libs/optional/vintageimprovements-1.21.1-0.0.0.8.jar',
-                    'libs/optional/rubberworks-neoforge-1.21.1-1.1.4.jar',
-                    'libs/optional/kubejs-create-neoforge-2101.3.1-build.18.jar')
-            testRuntimeOnly files('libs/optional/vintageimprovements-1.21.1-0.0.0.8.jar',
-                    'libs/optional/rubberworks-neoforge-1.21.1-1.1.4.jar',
-                    'libs/optional/kubejs-create-neoforge-2101.3.1-build.18.jar')
-        }
-        if (providers.gradleProperty('vatCompatVerification').isPresent()) {
-            localRuntime files('libs/optional/tfmg-1.21.1-1.3.2a-community.jar')
-            testRuntimeOnly files('libs/optional/tfmg-1.21.1-1.3.2a-community.jar')
-        }
-        if (providers.gradleProperty('rollingFoundryVerification').isPresent()) {
-            localRuntime files('libs/optional/createaddition-1.6.0.jar',
-                    'libs/optional/createmetallurgy-1.0.3-1.21.1.jar',
-                    'libs/optional/kubejs-create-neoforge-2101.3.1-build.18.jar')
-            testRuntimeOnly files('libs/optional/createaddition-1.6.0.jar',
-                    'libs/optional/createmetallurgy-1.0.3-1.21.1.jar',
-                    'libs/optional/kubejs-create-neoforge-2101.3.1-build.18.jar')
-        }
-        if (providers.gradleProperty('callableProbeVerification').isPresent()) {
-            localRuntime files('libs/optional/ProbeJS-8.0.3.jar')
-            testRuntimeOnly files('libs/optional/ProbeJS-8.0.3.jar')
-        }
-        if (providers.gradleProperty('devIntegrations').isPresent()) {
-            localRuntime fileTree(dir: 'libs/optional', include: ['*.jar'])
-        }
-    }
-}
+apply from: 'gradle/platform.gradle'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
@@ -126,6 +32,10 @@ tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += ['-proc:none']
 }
 tasks.withType(ProcessResources).configureEach { exclude '**/.DS_Store' }
+tasks.named('processResources') {
+    inputs.property('mod_version', project.version.toString())
+    filesMatching('META-INF/neoforge.mods.toml') { expand(mod_version: project.version.toString()) }
+}
 
 idea {
     module {
@@ -137,159 +47,12 @@ idea {
 tasks.named('jar') {
     // Definitions and sounds ship in Core; editable custom textures stay in KubeJS.
     exclude 'assets/**/textures/**'
-    manifest.attributes('Implementation-Title': mod_name, 'Implementation-Version': mod_version,
+    manifest.attributes('Implementation-Title': mod_name, 'Implementation-Version': project.version.toString(),
             'Implementation-Vendor': mod_authors)
 }
 
-// Runs without game bootstrap; full recipe and block contracts use GameTestServer.
-tasks.register('testFanMode', JavaExec) {
-    dependsOn testClasses
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'net.quiwh.cwi.FanModeContractTest'
-}
-tasks.named('check') { dependsOn 'testFanMode' }
-
-tasks.register('testRegistrationRulesWithoutKubeJS', JavaExec) {
-    dependsOn testClasses
-    classpath = sourceSets.test.runtimeClasspath.filter {
-        !it.name.startsWith('kubejs-') && !it.name.startsWith('rhino-')
-    }
-    mainClass = 'net.quiwh.cwi.RegistrationRulesWithoutKubeJSTest'
-}
-tasks.named('check') { dependsOn 'testRegistrationRulesWithoutKubeJS' }
-
-tasks.register('testShadowRulesWithoutMods', JavaExec) {
-    dependsOn testClasses
-    classpath = sourceSets.test.runtimeClasspath.filter {
-        !it.name.startsWith('kubejs-') && !it.name.startsWith('rhino-') && !it.name.startsWith('shadowdrop-')
-    }
-    mainClass = 'net.quiwh.cwi.ShadowRulesWithoutModsTest'
-}
-tasks.named('check') { dependsOn 'testShadowRulesWithoutMods' }
-
-// Optional local development-pack setup; private instance paths stay outside source control.
-def localDevPack = file('tools/dev-pack.gradle')
-if (localDevPack.isFile()) {
-    apply from: localDevPack
-}
-
-// Pure numeric/ownership contracts complement the in-game tests.
-tasks.register('testFurnaceContracts', JavaExec) {
-    dependsOn testClasses
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'net.quiwh.cwi.FurnaceContractTest'
-}
-tasks.register('testMachineKinetics', JavaExec) {
-    dependsOn testClasses
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'net.quiwh.cwi.MachineKineticsTest'
-}
-tasks.named('check') { dependsOn 'testFurnaceContracts', 'testMachineKinetics' }
-
-tasks.register('testInputAllocation', JavaExec) {
-    dependsOn testClasses
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'net.quiwh.cwi.InputAllocationContractTest'
-}
-tasks.named('check') { dependsOn 'testInputAllocation' }
-
-
-tasks.register('testOutputAllocation', JavaExec) {
-    dependsOn testClasses
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'net.quiwh.cwi.machine.OutputAllocationContractTest'
-}
-tasks.named('check') { dependsOn 'testOutputAllocation' }
-
-// This project uses native GameTests and the explicit Java contract tasks above.
-// Gradle9 otherwise treats their non-JUnit test sources as a discovery error.
-tasks.named('test', Test) { failOnNoDiscoveredTests = false }
-
-// Exercise the documented KubeJS builders in the isolated machine-test instance.
-tasks.register('prepareMachineGameTestScripts', Copy) {
-    from('examples/kubejs/server_scripts/Test.js')
-    from('examples/kubejs/server_scripts/native_machine_examples.js')
-    from('examples/kubejs/server_scripts/equipment_upgrade_examples.js')
-    from('examples/kubejs/server_scripts/rolling_assembly_example.js')
-    from('src/test/kubejs/hammer_recipe_contracts.js')
-    from('src/test/kubejs/machine_recipe_contracts.js')
-    from('src/test/kubejs/world_interaction_contracts.js')
-    from('src/test/kubejs/callable_recipe_contracts.js')
-    from('src/test/kubejs/addon_schema_contracts.js')
-    from('src/test/kubejs/equipment_upgrade_contracts.js')
-    from('src/test/kubejs/equipment_upgrade_adapter_contracts.js')
-    if (providers.gradleProperty('interactionPackVerification').isPresent()) {
-        from('build/world-interactions-20261031/payload/kubejs/server_scripts/Interactions/WorldRules.js')
-        from('build/world-interactions-20261031/world_pack_tags.js')
-    }
-    into('build/native-machine-test-run/kubejs/server_scripts')
-}
-tasks.register('prepareHammerGameTestScript', Copy) {
-    from('examples/kubejs/startup_scripts/hammer_builder_example.js')
-    from('src/test/kubejs/hammer_impact_contracts.js')
-    from('src/test/kubejs/hammer_model_contracts.js')
-    from('src/test/kubejs/hammer_pack_tiers.js')
-    from('src/test/kubejs/registration_blocking_contracts.js')
-    from('src/test/kubejs/shadowdrop_contracts.js')
-    from('src/test/kubejs/callable_startup_contracts.js')
-    from('src/test/kubejs/world_interaction_startup.js')
-    from('examples/pack-hammer-models.js')
-    if (providers.gradleProperty('interactionPackVerification').isPresent()) {
-        from('build/world-interactions-20261031/world_pack_registry.js')
-        from('build/world-interactions-20261031/payload/kubejs/startup_scripts/Blocks/RandomTickBlocks.js')
-    }
-    into('build/native-machine-test-run/kubejs/startup_scripts')
-}
-if (!offlineTarget) {
-    tasks.named('runGameTestServer') {
-        dependsOn 'prepareMachineGameTestScripts', 'prepareHammerGameTestScript'
-        // A loader crash can exit Java with code 0 before the GameTest runner starts.
-        // Require fresh test completion so IDEA does not report that as success.
-        doFirst {
-            ext.cwiGameTestStartedAt = System.currentTimeMillis()
-            if (!providers.gradleProperty('interactionPackVerification').isPresent()) {
-                delete 'build/native-machine-test-run/kubejs/startup_scripts/world_pack_registry.js',
-                        'build/native-machine-test-run/kubejs/startup_scripts/RandomTickBlocks.js',
-                        'build/native-machine-test-run/kubejs/server_scripts/WorldRules.js',
-                        'build/native-machine-test-run/kubejs/server_scripts/world_pack_tags.js'
-            }
-        }
-        doLast {
-            def resultLog = file('build/native-machine-test-run/logs/latest.log')
-            if (!resultLog.isFile() || resultLog.lastModified() < cwiGameTestStartedAt
-                    || !(resultLog.text =~ /All [1-9][0-9]* required tests passed/).find()) {
-                throw new GradleException('GameTests did not finish successfully. See build/native-machine-test-run/logs/latest.log.')
-            }
-        }
-    }
-    tasks.register('prepareMachineClientScripts', Copy) {
-        from('examples/kubejs/server_scripts/Test.js')
-        from('examples/kubejs/server_scripts/native_machine_examples.js')
-    from('examples/kubejs/server_scripts/equipment_upgrade_examples.js')
-    from('examples/kubejs/server_scripts/rolling_assembly_example.js')
-        into('build/native-machine-client-run/kubejs/server_scripts')
-    }
-    tasks.register('prepareHammerClientScript', Copy) {
-        from('examples/kubejs/startup_scripts/hammer_builder_example.js')
-        into('build/native-machine-client-run/kubejs/startup_scripts')
-    }
-    tasks.register('pruneMachineClientAssets', Exec) {
-        commandLine 'python3', 'tools/prune_machine_client_assets.py'
-    }
-    tasks.register('prepareMachineClientAssets', Copy) {
-        dependsOn 'pruneMachineClientAssets'
-        from('pack/core-assets/kubejs/assets')
-        def packConfig = file('tools/dev-pack.json')
-        if (packConfig.isFile()) {
-            def packSource = new JsonSlurper().parse(packConfig).source
-            from(file("${packSource}/kubejs/assets/kubejs")) {
-                include 'textures/**'
-                into 'kubejs'
-            }
-        }
-        into('build/native-machine-client-run/kubejs/assets')
-    }
-    tasks.named('runMachineClient') {
-        dependsOn 'prepareMachineClientScripts', 'prepareHammerClientScript', 'prepareMachineClientAssets'
-    }
-}
+// Each script owns one part of development and verification setup.
+apply from: 'gradle/build-info.gradle'
+apply from: 'gradle/development.gradle'
+apply from: 'gradle/game-tests.gradle'
+apply from: 'gradle/verification.gradle'

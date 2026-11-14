@@ -1,0 +1,105 @@
+import groovy.json.JsonSlurper
+
+// NeoForge launch profiles and pinned optional runtime dependencies.
+def offlineTarget = providers.gradleProperty('offlineTarget').isPresent()
+if (offlineTarget) {
+    // Diagnostic compilation against the installed, named target. No transformed runtime.
+    def configFile = file('tools/local-target.json')
+    if (!configFile.isFile()) throw new GradleException('Prepare tools/local-target.json before offline target compilation.')
+    def localConfig = new JsonSlurper().parse(configFile)
+    def classpathFile = file(localConfig.classpath_file)
+    if (!classpathFile.isFile()) throw new GradleException('The configured target classpath does not exist.')
+    dependencies { implementation files(classpathFile.text.trim().split(File.pathSeparator)) }
+    tasks.named('jar') {
+        doFirst { throw new GradleException('offlineTarget supports compile/check only. Use the NeoForge development build and runtime validation for a distributable JAR.') }
+    }
+} else {
+    apply plugin: 'net.neoforged.moddev'
+    neoForge {
+        version = neoforge_version
+        addModdingDependenciesTo sourceSets.test
+        runs {
+            client { client() }
+            machineClient {
+                client()
+                gameDirectory = file('build/native-machine-client-run')
+            }
+            server { server(); programArgument '--nogui' }
+            gameTestServer {
+                type = 'gameTestServer'
+                sourceSet = sourceSets.test
+                gameDirectory = file('build/native-machine-test-run')
+            }
+            configureEach {
+                systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            }
+        }
+        mods {
+            "${mod_id}" {
+                sourceSet sourceSets.main
+                sourceSet sourceSets.test
+            }
+        }
+    }
+    // Released 1.21.1 mods already use official names. Keep verified local jars private.
+    configurations {
+        localRuntime
+        testCompileOnly.extendsFrom compileOnly
+    }
+    configurations.runtimeClasspath.extendsFrom(configurations.localRuntime)
+    dependencies {
+        implementation files(cwiDependencies('runtime'))
+        compileOnly files(cwiDependencies('compile'))
+        compileOnly files(cwiDependencies('optional'))
+        if ((fullVerification || providers.gradleProperty('schemaVerification').isPresent())) {
+            def schemaMods = cwiOptionalDependencies([
+                    'kubejs-create-*.jar', 'createaddition-*.jar', 'createmetallurgy-*.jar',
+                    'vintageimprovements-*.jar', 'rubberworks-*.jar', 'tfmg-*.jar',
+                    'createdieselgenerators-*.jar', 'create_ratatouille-*.jar',
+                    'FarmersDelight-*.jar'])
+            localRuntime schemaMods
+            testRuntimeOnly schemaMods
+        }
+        if (providers.gradleProperty('machineClientVerification').isPresent()) {
+            localRuntime files('libs/optional/jei-1.21.1-neoforge-19.64.0.455.jar')
+        }
+        if ((fullVerification || providers.gradleProperty('conversionVerification').isPresent())) {
+            def conversionMods = cwiOptionalDependencies([
+                    'create_power_loader-*.jar', 'powergrid-*.jar', 'architectury-*.jar'])
+            localRuntime conversionMods
+            testRuntimeOnly conversionMods
+        }
+        if (providers.gradleProperty('recipeOutputCompatVerification').isPresent()) {
+            localRuntime files('libs/optional/vintageimprovements-1.21.1-0.0.0.8.jar',
+                    'libs/optional/rubberworks-neoforge-1.21.1-1.1.4.jar',
+                    'libs/optional/kubejs-create-neoforge-2101.3.1-build.18.jar')
+            testRuntimeOnly files('libs/optional/vintageimprovements-1.21.1-0.0.0.8.jar',
+                    'libs/optional/rubberworks-neoforge-1.21.1-1.1.4.jar',
+                    'libs/optional/kubejs-create-neoforge-2101.3.1-build.18.jar')
+        }
+        if (providers.gradleProperty('vatCompatVerification').isPresent()) {
+            localRuntime cwiOptionalDependencies(['tfmg-*.jar'])
+            testRuntimeOnly cwiOptionalDependencies(['tfmg-*.jar'])
+        }
+        if (providers.gradleProperty('gasContainerVerification').isPresent()) {
+            localRuntime cwiOptionalDependencies(['createdieselgenerators-*.jar'])
+            testRuntimeOnly cwiOptionalDependencies(['createdieselgenerators-*.jar'])
+        }
+        if (providers.gradleProperty('rollingFoundryVerification').isPresent()) {
+            localRuntime cwiOptionalDependencies(['createaddition-*.jar'])
+            localRuntime files('libs/optional/createmetallurgy-1.0.3-1.21.1.jar',
+                    'libs/optional/kubejs-create-neoforge-2101.3.1-build.18.jar')
+            testRuntimeOnly cwiOptionalDependencies(['createaddition-*.jar'])
+            testRuntimeOnly files('libs/optional/createmetallurgy-1.0.3-1.21.1.jar',
+                    'libs/optional/kubejs-create-neoforge-2101.3.1-build.18.jar')
+        }
+        if ((fullVerification || providers.gradleProperty('callableProbeVerification').isPresent())) {
+            localRuntime files('libs/optional/ProbeJS-8.0.3.jar')
+            testRuntimeOnly files('libs/optional/ProbeJS-8.0.3.jar')
+        }
+        if (providers.gradleProperty('devIntegrations').isPresent()) {
+            localRuntime files(cwiDependencies('optional'))
+        }
+    }
+}
+

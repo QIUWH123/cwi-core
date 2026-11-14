@@ -5,6 +5,7 @@ import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.latvian.mods.kubejs.plugin.KubeJSPlugin;
+import dev.latvian.mods.kubejs.plugin.builtin.event.ServerEvents;
 import dev.latvian.mods.kubejs.recipe.component.RecipeComponentTypeRegistry;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeSchemaRegistry;
 import dev.latvian.mods.kubejs.registry.BuilderTypeRegistry;
@@ -12,11 +13,11 @@ import dev.latvian.mods.kubejs.registry.RegistryType;
 import dev.latvian.mods.kubejs.script.BindingRegistry;
 import dev.latvian.mods.kubejs.script.ScriptManager;
 import dev.latvian.mods.kubejs.script.ScriptType;
-import dev.latvian.mods.kubejs.plugin.builtin.event.ServerEvents;
-import net.minecraft.core.registries.Registries;
+import java.time.LocalDateTime;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
@@ -29,12 +30,16 @@ import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.quiwh.cwi.CwiCore;
+import net.quiwh.cwi.compat.kubejs.CwiAddonRecipeSchemas;
+import net.quiwh.cwi.compat.kubejs.CwiHammerRecipeComponents;
+import net.quiwh.cwi.compat.kubejs.CwiInteractionActionComponent;
+import net.quiwh.cwi.compat.kubejs.CwiMachineRecipeComponents;
+import net.quiwh.cwi.compat.kubejs.CwiMachineRecipeSchemas;
+import net.quiwh.cwi.compat.kubejs.CwiProcessingOutputComponent;
+import net.quiwh.cwi.compat.kubejs.CwiUpgradeIngredientComponent;
 import net.quiwh.cwi.kubejs.HammerBuilder;
-
-import java.time.LocalDateTime;
 
 /** Shared script conveniences. Recipe schemas are data driven in KubeJS 7. */
 public final class CwiKubeJSPlugin implements KubeJSPlugin {
@@ -46,7 +51,7 @@ public final class CwiKubeJSPlugin implements KubeJSPlugin {
             dev.latvian.mods.kubejs.core.RecipeManagerKJS manager,
             java.util.Map<ResourceLocation, com.google.gson.JsonElement> recipes) {
         // KubeJS can receive restored original definitions after the native resource scan.
-        VintageMaterialPolicy.filterData("recipe", recipes);
+        net.quiwh.cwi.compat.data.AddonRecipeData.filter("recipe", recipes);
         var upgrades = new EquipmentUpgradeEvent();
         EquipmentUpgradeEvent.EVENT.post(upgrades);
         upgrades.generate(event, recipes);
@@ -77,7 +82,7 @@ public final class CwiKubeJSPlugin implements KubeJSPlugin {
     }
 
     @Override public void afterScriptsLoaded(ScriptManager manager) {
-        if (manager.scriptType == ScriptType.STARTUP) RegistrationBlockEvent.postStartup();
+        if (manager.scriptType == ScriptType.STARTUP) { RegistrationBlockEvent.postStartup(); GasConfigurationEvent.postStartup(); }
         if (manager.scriptType == ScriptType.CLIENT) ShadowDropEvent.postClient();
     }
 

@@ -1,5 +1,23 @@
 {
   "type": "cwi:mixing_vessel_mixing",
-  "item_inputs": [{ "ingredient": { "item": "minecraft:sand" }, "count": 2, "chance": 0.5, "per_tick": true }],
-  "item_outputs": [{ "stack": { "id": "minecraft:clay_ball", "count": 3 }, "chance": 0.25, "per_tick": true }]
+  "ingredients": [
+    {
+      "ingredient": {
+        "item": "minecraft:sand"
+      },
+      "count": 2,
+      "chance": 0.5,
+      "per_tick": true
+    }
+  ],
+  "results": [
+    {
+      "stack": {
+        "id": "minecraft:clay_ball",
+        "count": 3
+      },
+      "chance": 0.25,
+      "per_tick": true
+    }
+  ]
 }

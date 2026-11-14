@@ -105,7 +105,7 @@ public final class MachineProcessingGameTests {
         helper.succeed();
     }
     @GameTest(template="empty",templateNamespace=CwiCore.ID)
-    public static void mixerBatchesAndSamplesSpeed(GameTestHelper helper) {
+    public static void mixerRepeatsSingleCyclesAndFollowsSpeed(GameTestHelper helper) {
         BlockPos pos=new BlockPos(1,1,1);helper.setBlock(pos,MachineBlocks.MIXING_VESSEL.get());
         MixingVesselBlockEntity machine=helper.getBlockEntity(pos);
         CreativeMotorBlockEntity motor=drive(helper,pos,0);
@@ -114,19 +114,22 @@ public final class MachineProcessingGameTests {
         machine.tick();
         helper.assertTrue(machine.progress()==0,"zeroRPM cannot select a recipe");
         motor.generatedSpeed.setValue(256);
-        for(int tick=0;tick<10;tick++)machine.tick();
-        helper.assertTrue(machine.progress()==10 && machine.batch()==4 && machine.duration()==20,"batch4 samples256RPM duration");
+        for(int tick=0;tick<2;tick++)machine.tick();
+        helper.assertTrue(machine.progress()==2 && machine.batch()==1 && machine.duration()==4,"one recipe samples Create's256RPM active timing");
         helper.assertTrue(machine.getItem(0).getCount()==8 && machine.getFluid(0).getAmount()==400,"ordinary inputs deferred");
         var saved=machine.saveWithoutMetadata(helper.getLevel().registryAccess());machine.loadCustomOnly(saved,helper.getLevel().registryAccess());
-        helper.assertTrue(machine.progress()==10 && machine.batch()==4,"active batch persists across reload");
+        helper.assertTrue(machine.progress()==2 && machine.batch()==1,"active cycle persists across reload");
         motor.generatedSpeed.setValue(-128);
-        for(int tick=0;tick<10;tick++)machine.tick();
+        for(int tick=0;tick<4;tick++)machine.tick();
         int gold=0;for(int slot=0;slot<6;slot++)if(machine.getItem(slot).is(Items.GOLD_INGOT))gold+=machine.getItem(slot).getCount();
-        helper.assertTrue(gold==4 && machine.getFluid(0).isEmpty(),"reverse direction completes sampled batch exactly once");
+        helper.assertTrue(gold==1 && machine.getFluid(0).getAmount()==300,"reverse direction completes exactly one cycle at the changed speed");
+        for(int tick=0;tick<21;tick++)machine.tick();
+        gold=0;for(int slot=0;slot<6;slot++)if(machine.getItem(slot).is(Items.GOLD_INGOT))gold+=machine.getItem(slot).getCount();
+        helper.assertTrue(gold==4 && machine.getFluid(0).isEmpty(),"three repeated7-tick cycles complete remaining inputs");
         helper.succeed();
     }
     @GameTest(template="empty",templateNamespace=CwiCore.ID)
-    public static void removedInputsAndBlockedOutputsReset(GameTestHelper helper) {
+    public static void removedInputsAndBlockedOutputsPause(GameTestHelper helper) {
         BlockPos pos=new BlockPos(1,1,1);helper.setBlock(pos,MachineBlocks.MIXING_VESSEL.get());
         MixingVesselBlockEntity machine=helper.getBlockEntity(pos);
         drive(helper,pos,128);
@@ -135,14 +138,14 @@ public final class MachineProcessingGameTests {
         machine.tick();
         helper.assertTrue(machine.progress()==1,"valid recipe starts");
         machine.items().setStackInSlot(0,ItemStack.EMPTY);machine.tick();
-        helper.assertTrue(machine.progress()==0 && machine.batch()==0,"missing deferred input resets progress");
+        helper.assertTrue(machine.progress()==1 && machine.batch()==1,"missing deferred input pauses progress");
         helper.assertTrue(machine.getFluid(0).getAmount()==100,"interruption leaves ordinary fluid unconsumed");
         machine.items().setStackInSlot(0,new ItemStack(Items.IRON_INGOT,2));machine.tick();
-        helper.assertTrue(machine.progress()==1,"reinserted input selects a fresh batch");
+        helper.assertTrue(machine.progress()==2,"reinserted input resumes the active operation");
         machine.items().setStackInSlot(0,new ItemStack(Items.IRON_INGOT,3));
         for(int slot=1;slot<6;slot++)machine.items().setStackInSlot(slot,new ItemStack(Items.DIAMOND,64));
-        machine.tick();
-        helper.assertTrue(machine.progress()==0 && machine.batch()==0,"blocking every ordinary output slot resets progress");
+        for (int tick=0;tick<10;tick++) machine.tick();
+        helper.assertTrue(machine.progress()==6 && machine.batch()==1,"blocking every ordinary output slot pauses before completion");
         helper.assertTrue(machine.getItem(0).getCount()==3 && machine.getFluid(0).getAmount()==100,"blocked output preserves deferred inputs");
         helper.succeed();
     }
@@ -178,7 +181,7 @@ public final class MachineProcessingGameTests {
             helper.setBlock(mixerPos.above(),MachineBlocks.LAVA_EXTRACTOR_PUMP.get());
             helper.runAfterDelay(5,()->{
                 helper.assertTrue(mixer.isOverStressed() && mixer.getSpeed()==0 && mixer.getTheoreticalSpeed()!=0,"extra pump load overstresses the finite Stirling network");
-                helper.assertTrue(mixer.progress()==0,"overstress clears mixerprogress and stops recipes");
+                helper.assertTrue(mixer.progress()>0 && !mixer.getBlockState().getValue(net.quiwh.cwi.machine.MachineBlock.WORKING),"overstress pauses the active recipe without losing progress");
                 helper.assertTrue(mixer.getItem(0).getCount()==2 && mixer.getFluid(0).getAmount()==100,"overstress preserves ordinary deferred inputs");
                 helper.succeed();
             });

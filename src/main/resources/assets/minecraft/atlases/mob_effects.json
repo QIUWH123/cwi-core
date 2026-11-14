@@ -1,0 +1,14 @@
+{
+  "sources": [
+    {
+      "type": "minecraft:single",
+      "resource": "minecraft:mob_effect/weakness",
+      "sprite": "cwi:neurotoxin"
+    },
+    {
+      "type": "minecraft:directory",
+      "source": "mob_effect",
+      "prefix": ""
+    }
+  ]
+}

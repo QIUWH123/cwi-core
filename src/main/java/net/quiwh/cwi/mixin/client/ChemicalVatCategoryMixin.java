@@ -22,6 +22,8 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 @Mixin(targets = "com.drmangotea.tfmg.integration.jei.category.ChemicalVatCategory", remap = false)
 abstract class ChemicalVatCategoryMixin {
     private static boolean cwi$expanded(VatMachineRecipe recipe) {
+        if(net.quiwh.cwi.compat.jei.NativeProcessingJei.handles(recipe))
+            return net.quiwh.cwi.compat.jei.NativeProcessingJei.itemInputs(recipe)>4||net.quiwh.cwi.compat.jei.NativeProcessingJei.itemOutputs(recipe)>4;
         return ItemHelper.condenseIngredients(recipe.getIngredients()).size() > 4 || recipe.getRollableResults().size() > 4;
     }
 
@@ -55,7 +57,7 @@ abstract class ChemicalVatCategoryMixin {
             at = @At(value = "INVOKE", target = "Lcom/drmangotea/tfmg/registry/TFMGGuiTextures;render(Lnet/minecraft/client/gui/GuiGraphics;II)V"))
     private void cwi$slotDecorations(com.drmangotea.tfmg.registry.TFMGGuiTextures texture, GuiGraphics graphics, int x, int y,
             VatMachineRecipe recipe, mezz.jei.api.gui.ingredient.IRecipeSlotsView slots, GuiGraphics originalGraphics, double mouseX, double mouseY) {
-        if (!cwi$expanded(recipe) || texture != com.drmangotea.tfmg.registry.TFMGGuiTextures.SLOT) texture.render(graphics, x, y);
+        if ((!cwi$expanded(recipe)&&!net.quiwh.cwi.compat.jei.NativeProcessingJei.handles(recipe)) || texture != com.drmangotea.tfmg.registry.TFMGGuiTextures.SLOT) texture.render(graphics, x, y);
     }
 
     @ModifyArgs(method = "draw(Lcom/drmangotea/tfmg/recipes/VatMachineRecipe;Lmezz/jei/api/gui/ingredient/IRecipeSlotsView;Lnet/minecraft/client/gui/GuiGraphics;DD)V",

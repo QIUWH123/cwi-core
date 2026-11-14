@@ -19,6 +19,8 @@ import org.jetbrains.annotations.Nullable;
 
 /** Shared persisted/synchronised storage; recipes use the internal handlers, automation uses side views. */
 public class MachineBlockEntity extends KineticBlockEntity {
+    /** Version 0 (missing key) has the same storage shape. Future shape changes need an explicit migration. */
+    public static final int DATA_VERSION = 1;
     private boolean reading;
     private boolean syncPending;
     private int syncCooldown;
@@ -32,14 +34,17 @@ public class MachineBlockEntity extends KineticBlockEntity {
             @Override public int getSlotLimit(int slot) { return itemSlotLimit(slot); }
             @Override public boolean isItemValid(int slot, ItemStack stack) { return acceptsItem(slot, stack); }
         };
-        tanks = new MultiTank(this::changed, capacities);
+        tanks = createFluidStorage(capacities);
     }
+
+    protected MultiTank createFluidStorage(int[] capacities) { return new MultiTank(this::changed, capacities); }
 
     public ItemStackHandler items() { return inventory; }
     public MultiTank fluids() { return tanks; }
     public ItemStack getItem(int slot) { return inventory.getStackInSlot(slot); }
     public FluidStack getFluid(int tank) { return tanks.getFluidInTank(tank); }
     protected int itemSlotLimit(int slot) { return 64; }
+    protected int storageVersion() { return DATA_VERSION; }
     protected boolean acceptsItem(int slot, ItemStack stack) { return true; }
     protected void onInventoryChanged(int slot) {}
 
@@ -86,7 +91,7 @@ public class MachineBlockEntity extends KineticBlockEntity {
 
     @Override protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
-        tag.putInt("MachineDataVersion", 1);
+        tag.putInt("MachineDataVersion", storageVersion());
         tag.put("Items", inventory.serializeNBT(registries));
         tag.put("Fluids", tanks.save(registries));
     }

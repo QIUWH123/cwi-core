@@ -12,9 +12,9 @@ import dev.latvian.mods.kubejs.recipe.RecipeScriptContext;
 import dev.latvian.mods.kubejs.recipe.RecipeTypeRegistryContext;
 import dev.latvian.mods.kubejs.recipe.component.RecipeComponent;
 import dev.latvian.mods.kubejs.recipe.component.RecipeComponentType;
+import dev.latvian.mods.kubejs.recipe.filter.RecipeMatchContext;
 import dev.latvian.mods.kubejs.recipe.match.ItemMatch;
 import dev.latvian.mods.kubejs.recipe.match.ReplacementMatchInfo;
-import dev.latvian.mods.kubejs.recipe.filter.RecipeMatchContext;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeSchemaData;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeSchemaStorage;
 import dev.latvian.mods.kubejs.recipe.schema.postprocessing.RecipePostProcessorType;
@@ -42,7 +42,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.quiwh.cwi.compat.CwiKubeJSPlugin;
-import net.quiwh.cwi.compat.CwiProcessingOutputComponent;
+import net.quiwh.cwi.compat.kubejs.CwiProcessingOutputComponent;
 
 /** Run with KubeJS, both with and without its optional Create addon. */
 @GameTestHolder(CwiCore.ID)
@@ -143,6 +143,7 @@ public final class CwiKubeJSRecipeTests {
                         && keys.get(2).getAsJsonObject().get("optional").getAsInt() == 100,
                         "fan DSL keeps optional processing time");
                 var decodedSchema = RecipeSchemaData.CODEC.apply(registryContext).parse(registries.json(), schema).getOrThrow();
+                MachineKubeJSRecipeTests.verifyNumericDuration(decodedSchema.keys().orElseThrow().get(2).type(), context, path);
                 require(decodedSchema.keys().orElseThrow().size() == 3,
                         "native KubeJS decodes self-contained schema with only builtin and CWI components");
             }

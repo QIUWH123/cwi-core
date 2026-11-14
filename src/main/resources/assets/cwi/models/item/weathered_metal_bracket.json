@@ -1,0 +1,7 @@
+{
+  "parent": "cwi:block/bracket/item",
+  "textures": {
+    "bracket": "cwi:block/bracket_weathered_metal",
+    "plate": "cwi:block/bracket_plate_weathered_metal"
+  }
+}

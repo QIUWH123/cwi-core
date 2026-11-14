@@ -4,7 +4,7 @@ ServerEvents.recipes(event => {
   event.recipes.cwi.blast_furnace_processing(
     Fluid.of('minecraft:lava', 375),
     ['2x #c:sands', Item.of('minecraft:cobblestone', 3), Fluid.of('minecraft:water', 125)]
-  ).processingTime(80).id('cwi:contracts/machine_furnace')
+  ).processingTime(80).superheated().minimumHeat(2000).maximumHeat(2200).id('cwi:contracts/machine_furnace')
 
   event.recipes.cwi.incubating('2x minecraft:honey_bottle', 'minecraft:glass_bottle')
     .id('cwi:contracts/machine_incubator')
@@ -17,18 +17,16 @@ ServerEvents.recipes(event => {
   event.recipes.cwi.mixing_vessel_mixing(
     [Item.of('minecraft:clay_ball'), Fluid.of('minecraft:lava', 75)],
     ['minecraft:sand', Fluid.of('minecraft:water', 250)]
-  ).inputs(Item.of('minecraft:dirt', 4)).outputs('2x minecraft:gravel')
+  ).ingredients(Item.of('minecraft:dirt', 4)).results('2x minecraft:gravel')
     .id('cwi:contracts/machine_reset')
 
   event.recipes.cwi.blast_furnace_processing()
-    .input('minecraft:cobblestone').output(Fluid.of('minecraft:lava', 50))
+    .ingredients('minecraft:cobblestone').results(Fluid.of('minecraft:lava', 50))
     .id('cwi:contracts/machine_aliases')
 
   event.recipes.cwi.mixing_vessel_mixing()
-    .itemInputs(['3x #c:sands'])
-    .fluidInputs([{ ingredient: 'minecraft:water', amount: 10, chance: 0.5, per_tick: true }])
-    .itemOutputs([{ item: 'minecraft:clay_ball', count: 2, chance: 0.25 }])
-    .fluidOutputs([{ stack: Fluid.of('minecraft:lava', 20), chance: 0.75 }])
+    .ingredients(['3x #c:sands', { ingredient: 'minecraft:water', amount: 10, chance: 0.5, per_tick: true }])
+    .results([{ item: 'minecraft:clay_ball', count: 2, chance: 0.25 }, { stack: Fluid.of('minecraft:lava', 20), chance: 0.75 }])
     .id('cwi:contracts/machine_advanced')
 
   // KubeJS event replacements operate on recipes loaded from datapacks.
@@ -38,8 +36,8 @@ ServerEvents.recipes(event => {
   const ProcessingOutput = Java.loadClass('com.simibubi.create.content.processing.recipe.ProcessingOutput')
   event.recipes.cwi.mixing_vessel_mixing(
     new ProcessingOutput(Item.of('minecraft:brick', 2), 0.5),
-    { ingredient: 'minecraft:sand', count: 2, chance: 0.5, per_tick: true }
-  ).fluidInputs([Fluid.of('minecraft:water', 100)])
+    [{ ingredient: 'minecraft:sand', count: 2, chance: 0.5, per_tick: true }, Fluid.of('minecraft:water', 100)]
+  )
     .id('cwi:contracts/machine_chance')
 
   // Overlapping native recipes verify specificity, speed feedback, and reload behavior.

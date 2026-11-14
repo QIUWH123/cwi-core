@@ -38,6 +38,6 @@ abstract class CompressingCategoryMixin {
     @ModifyArgs(method = "draw(Lio/github/hadron13/rubberworks/blocks/compressor/CompressingRecipe;Lmezz/jei/api/gui/ingredient/IRecipeSlotsView;Lnet/minecraft/client/gui/GuiGraphics;DD)V",
             at = @At(value = "INVOKE", target = "Lio/github/hadron13/rubberworks/compat/jei/ModGuiTextures;render(Lnet/minecraft/client/gui/GuiGraphics;II)V", ordinal = 1))
     private void cwi$moveOutputArrow(Args args, CompressingRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
-        if (recipe.getRollableResults().size() > 2) args.set(1, 94);
+        if (net.quiwh.cwi.compat.jei.NativeProcessingJei.outputCount(recipe) > 2) args.set(1, 94);
     }
 }

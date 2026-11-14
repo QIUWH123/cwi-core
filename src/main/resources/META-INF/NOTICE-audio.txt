@@ -1,0 +1,17 @@
+CWI Core includes the following third-party audio adapted from the original
+modpack's KubeJS assets. These files retain their upstream attribution and terms.
+
+Clanging Howl 1.1.0
+Authors: Mongoose_artist and Polarice3
+Upstream declared license: All Rights Reserved
+Included audio: assets/cwi/sounds/item/drilling.ogg
+
+Ad Astra 1.15.21
+Author: Alex Nijjar
+Upstream declared license: Terrarium License
+Included audio: assets/cwi/sounds/oxygen/*.ogg
+The exact version-matched license text is included in LICENSE-ad-astra.txt.
+Upstream source: https://github.com/terrarium-earth/ad-astra/tree/5a986665e1d91e31c50321ff225a3fb23558ff35
+
+This attribution notice does not grant additional rights or relicense these
+files under Core's own terms.

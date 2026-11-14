@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.quiwh.cwi.mixin.pack",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["AdvancementReloadMixin"],
+  "client": ["WorldOpenFlowsMixin", "PackSelectionModelAccessor", "ResourcePackEntryMixin"],
+  "injectors": {"defaultRequire": 1}
+}

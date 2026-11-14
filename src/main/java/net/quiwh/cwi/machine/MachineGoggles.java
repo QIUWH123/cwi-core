@@ -26,7 +26,7 @@ final class MachineGoggles {
             var stack = items.getStackInSlot(slot);
             if (stack.isEmpty()) continue;
             if (empty) heading(tooltip, Component.translatable("cwi.machine.contents"));
-            line(tooltip, stack.getHoverName().copy().append(Component.literal(" x" + stack.getCount()).withStyle(ChatFormatting.GREEN)));
+            line(tooltip, stack.getHoverName().copy().append(Component.literal(" ×" + stack.getCount()).withStyle(ChatFormatting.GREEN)));
             empty = false;
         }
         for (int tank = 0; tank < fluids.getTanks(); tank++) {

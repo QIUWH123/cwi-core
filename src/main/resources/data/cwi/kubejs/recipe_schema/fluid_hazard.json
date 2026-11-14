@@ -41,6 +41,40 @@
         "max": 64
       },
       "optional": []
+    },
+    {
+      "name": "protection",
+      "type": "string",
+      "default_optional": true
+    },
+    {
+      "name": "required_resistance",
+      "type": "positive_int",
+      "default_optional": true,
+      "function_names": [
+        "requiredResistance"
+      ]
+    },
+    {
+      "name": "durability_cost",
+      "type": "non_negative_int",
+      "default_optional": true,
+      "function_names": [
+        "durabilityCost"
+      ]
+    },
+    {
+      "name": "protection_slots",
+      "type": {
+        "type": "list",
+        "component": "string",
+        "min": 1,
+        "max": 4
+      },
+      "default_optional": true,
+      "function_names": [
+        "protectionSlots"
+      ]
     }
   ],
   "constructors": [

@@ -4,11 +4,14 @@ import com.simibubi.create.AllBlocks;
 import com.simibubi.create.compat.jei.category.CreateRecipeCategory;
 import com.simibubi.create.compat.jei.category.ProcessingViaFanCategory;
 import com.simibubi.create.compat.jei.category.animations.AnimatedKinetics;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.recipe.RecipeType;
-import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
+import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.client.Minecraft;
@@ -23,18 +26,18 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.quiwh.cwi.CwiCore;
-import net.quiwh.cwi.processing.FanRecipe;
-import net.quiwh.cwi.processing.FanRecipes;
-import net.quiwh.cwi.machine.recipe.MachineRecipe;
-import net.quiwh.cwi.machine.recipe.MachineRecipes;
+import net.quiwh.cwi.compat.jei.EquipmentUpgradeJeiCategory;
+import net.quiwh.cwi.compat.jei.HammerJeiCategory;
+import net.quiwh.cwi.compat.jei.MachineJeiCategory;
+import net.quiwh.cwi.compat.jei.WorldSpoutingJeiCategory;
 import net.quiwh.cwi.hammer.HammerRecipe;
 import net.quiwh.cwi.hammer.HammerRecipes;
 import net.quiwh.cwi.interaction.InteractionRecipe;
 import net.quiwh.cwi.interaction.InteractionRecipes;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import net.quiwh.cwi.machine.recipe.MachineRecipe;
+import net.quiwh.cwi.machine.recipe.MachineRecipes;
+import net.quiwh.cwi.processing.FanRecipe;
+import net.quiwh.cwi.processing.FanRecipes;
 
 /** Native Create fan categories retain chance slots and animated fan presentation. */
 @JeiPlugin

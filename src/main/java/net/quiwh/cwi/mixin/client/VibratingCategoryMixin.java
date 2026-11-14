@@ -39,6 +39,7 @@ abstract class VibratingCategoryMixin {
             at = @At(value = "INVOKE", target = "Lcom/simibubi/create/foundation/gui/AllGuiTextures;render(Lnet/minecraft/client/gui/GuiGraphics;II)V", ordinal = 0))
     private void cwi$omitClippedOutputArrow(AllGuiTextures texture, GuiGraphics graphics, int x, int y,
                                           VibratingRecipe recipe, IRecipeSlotsView slots, GuiGraphics originalGraphics, double mouseX, double mouseY) {
-        if (recipe.getRollableResults().size() <= 6) texture.render(graphics, x, y);
+        int count=net.quiwh.cwi.compat.jei.NativeProcessingJei.outputCount(recipe);
+        if (count <= 6) texture.render(graphics, x, 19-count/3*19/2);
     }
 }

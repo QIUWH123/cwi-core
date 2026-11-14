@@ -19,8 +19,8 @@ ServerEvents.recipes(event => {
 
     r.cwi.blast_furnace_processing(Fluid.of('minecraft:lava', 125), 'minecraft:quartz_block')
         .processingTime(20).id(id('furnace_1'))
-    r.cwi.blast_furnace_processing().inputs(['2x minecraft:quartz', Fluid.of('minecraft:water', 100)])
-        .outputs(Fluid.of('minecraft:lava', 250)).processingTime(40).heatRequirement('heated').id(id('furnace_2'))
+    r.cwi.blast_furnace_processing().ingredients(['2x minecraft:quartz', Fluid.of('minecraft:water', 100)])
+        .results(Fluid.of('minecraft:lava', 250)).processingTime(40).heated().id(id('furnace_2'))
     r.cwi.incubating('minecraft:slime_ball', 'minecraft:dragon_breath')
         .minimumRpm(16).processingTime(20).id(id('incubator_1'))
     r.cwi.incubating({ item: 'minecraft:honey_bottle', count: 2, chance: 0.5 }, 'minecraft:experience_bottle')
@@ -75,6 +75,11 @@ ServerEvents.recipes(event => {
                 [n === 1 ? '2x minecraft:prismarine' : '2x minecraft:prismarine_bricks', Fluid.of('minecraft:lava', 100)]).processingTime(40 * n)
                 .minSize(n).heatLevel(n - 1).pressure(0).machines(['tfmg:mixing']).allowedVatTypes(['tfmg:steel'])
                 .id(id('vat_' + n))
+            // TFMG 1.3.3's canonical type; the older name above remains a native alias.
+            r.tfmg.vat([chance('minecraft:quartz', n, 0.5), Fluid.of('minecraft:water', 50)],
+                [n === 1 ? '2x minecraft:prismarine' : '2x minecraft:prismarine_bricks', Fluid.of('minecraft:lava', 100)]).processingTime(40 * n)
+                .minSize(n).heatLevel(n - 1).pressure(0).machines(['tfmg:mixing']).allowedVatTypes(['tfmg:steel'])
+                .id(id('vat_canonical_' + n))
         }
     }
     if (Platform.isLoaded('ratatouille')) {
@@ -104,21 +109,6 @@ ServerEvents.recipes(event => {
                 .processingTime(40 * n).id(id('melting_' + n))
             r.createmetallurgy.alloying([Fluid.of('minecraft:water', 100)], ['minecraft:prismarine', 'minecraft:quartz', 'minecraft:amethyst_shard', n === 1 ? 'minecraft:flint' : 'minecraft:gunpowder'])
                 .processingTime(40 * n).id(id('alloying_' + n))
-        }
-    }
-    if (Platform.isLoaded('petrochem')) {
-        r.petrochem.pumpjack([Fluid.of('minecraft:water', 100)], '#minecraft:is_jungle').id(id('pumpjack_1'))
-        r.petrochem.pumpjack([Fluid.of('minecraft:lava', 100)], 'minecraft:plains').id(id('pumpjack_2'))
-    }
-    if (Platform.isLoaded('lychee')) {
-        for (let n = 1; n <= 2; n++) {
-            let post = [{ type: 'drop_item', id: 'minecraft:quartz', count: n, contextual: { type: 'chance', chance: 0.5 } }]
-            r.lychee.item_inside(post, n === 1 ? 'minecraft:prismarine_shard' : '2x minecraft:quartz', { blocks: ['minecraft:water'], state: { level: '0' } })
-                .time(20 * n).id(id('item_inside_' + n))
-            r.lychee.item_burning(n === 1 ? post : '2x minecraft:quartz', n === 1 ? 'minecraft:prismarine_crystals' : 'minecraft:amethyst_shard').id(id('item_burning_' + n))
-            r.lychee.block_interacting([{ type: 'if', contextual: { type: 'chance', chance: 0.5 }, then: post }],
-                n === 1 ? 'minecraft:flint' : 'minecraft:quartz', 'minecraft:prismarine').id(id('block_interacting_' + n))
-            r.lychee.dripstone_dripping(post, n === 1 ? 'minecraft:water' : 'minecraft:lava', 'minecraft:prismarine').id(id('dripstone_' + n))
         }
     }
 })

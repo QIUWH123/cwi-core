@@ -11,11 +11,11 @@ public final class MachineKineticsTest {
         check(MachineKinetics.canWork(-64, false, 64), "reverse incubation");
         check(!MachineKinetics.canWork(257, false, 1, 256), "configured overspeed cannot complete a recipe");
         check(MachineKinetics.canWork(512, false, 1, 512), "configured high speed works");
-        check(MachineKinetics.mixerDuration(100, 512) == 50, "high-speed duration keeps256RPM reference");
+        check(MachineKinetics.mixerDuration(100, 512) == 1, "high-speed duration keeps256RPM reference");
         check(!MachineKinetics.canWork(Float.NaN, false, 1), "invalid speed cannot process");
-        check(MachineKinetics.mixerDuration(20, 256) == 20, "full speed duration");
-        check(MachineKinetics.mixerDuration(20, -128) == 40, "reverse speed duration");
-        check(MachineKinetics.mixerDuration(20, 32) == 160, "slow mixer duration");
+        check(MachineKinetics.mixerDuration(20, 256) == 4, "full speed duration");
+        check(MachineKinetics.mixerDuration(20, -128) == 7, "reverse speed duration");
+        check(MachineKinetics.mixerDuration(20, 32) == 13, "slow mixer duration");
         check(MachineKinetics.mixerDuration(20, 0) == 0, "stopped mixer has no batch duration");
         check(MachineKinetics.mixerDuration(Integer.MAX_VALUE, 1) == Integer.MAX_VALUE, "duration overflow saturates");
         check(MachineKinetics.lavaBurst(1, 128, false) == 250, "one pump half-speed burst");

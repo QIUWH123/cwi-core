@@ -26,6 +26,7 @@ import net.quiwh.cwi.machine.FurnaceStructure;
 import net.quiwh.cwi.machine.IncubatorBlockEntity;
 import net.quiwh.cwi.machine.LavaExtractorBlockEntity;
 import net.quiwh.cwi.machine.MachineBlock;
+import net.quiwh.cwi.machine.MachineBlockEntity;
 import net.quiwh.cwi.machine.MachineBlocks;
 import net.quiwh.cwi.machine.MixingVesselBlockEntity;
 import net.quiwh.cwi.machine.SolarEvaporatorBlockEntity;
@@ -58,7 +59,7 @@ public final class NativeMachineGameTests {
         BlastFurnaceBlockEntity furnace = helper.getBlockEntity(FURNACE_ORIGIN);
         FurnaceHatchBlockEntity hatch = helper.getBlockEntity(hatchPos);
         helper.assertTrue(furnace.ownsHatch(helper.absolutePos(hatchPos)), "rotated hatch belongs to the controller");
-        helper.assertTrue(hatch.getItemCapability(Direction.UP).getSlots() == 8, "formed hatch exposes controller storage");
+        helper.assertTrue(hatch.getItemCapability(Direction.UP).getSlots() == 14, "formed hatch exposes controller storage");
         IFluidHandler hatchFluids = hatch.getFluidCapability(Direction.UP);
         helper.assertTrue(hatchFluids.getTanks() == 4, "hatch exposes both ordinary and gas input tanks");
         helper.assertTrue(hatchFluids.fill(new FluidStack(Fluids.WATER, 200), IFluidHandler.FluidAction.EXECUTE) == 200,
@@ -78,7 +79,7 @@ public final class NativeMachineGameTests {
         checkFurnaceHeight(helper, front, furnace, hatch, 8);
     }
 
-    private static void buildFurnace(GameTestHelper helper, Direction front, int height) {
+    static void buildFurnace(GameTestHelper helper, Direction front, int height) {
         for (int y = 0; y < height; y++) for (int z = 0; z < 5; z++) for (int x = 0; x < 5; x++) {
             char predicate = FurnaceStructure.predicate(x, y, z);
             if (predicate == '5') continue;
@@ -92,6 +93,40 @@ public final class NativeMachineGameTests {
         BlockPos hatchPos = furnaceAt(front, 0, 1, 0);
         helper.setBlock(hatchPos, MachineBlocks.FURNACE_HATCH.get());
         helper.setBlock(FURNACE_ORIGIN, MachineBlocks.BLAST_FURNACE.get().defaultBlockState().setValue(MachineBlock.FACING, front));
+    }
+
+    @GameTest(template = "machine_empty", templateNamespace = CwiCore.ID)
+    public static void furnaceHonorsInclusiveMaximumTemperature(GameTestHelper helper) {
+        buildFurnace(helper, Direction.NORTH, 4);
+        helper.setBlock(FURNACE_ORIGIN.north(), Blocks.STONE);
+        Runnable checks = () -> {
+            BlastFurnaceBlockEntity furnace = helper.getBlockEntity(FURNACE_ORIGIN);
+            furnace.hatchItems().insertItem(0, new ItemStack(Items.NAUTILUS_SHELL), false);
+            var registries = helper.getLevel().registryAccess();
+            var saved = furnace.saveWithoutMetadata(registries);
+            saved.putDouble("Temperature", 1600.5);
+            furnace.loadCustomOnly(saved, registries);
+            furnace.tick();
+            helper.assertTrue(furnace.progress() == 0 && !furnace.working() && furnace.getItem(0).getCount() == 1,
+                    "recipe cannot start above its maximum temperature");
+            saved = furnace.saveWithoutMetadata(registries); saved.putDouble("Temperature", 1600);
+            furnace.loadCustomOnly(saved, registries); furnace.tick();
+            helper.assertTrue(furnace.progress() == 1 && furnace.working(), "upper bound is inclusive");
+            furnace.tick(); furnace.tick();
+            helper.assertTrue(furnace.progress() == 3, "in-range processing advances normally");
+            saved = furnace.saveWithoutMetadata(registries); saved.putDouble("Temperature", 1600.5);
+            furnace.loadCustomOnly(saved, registries); furnace.tick();
+            helper.assertTrue(!furnace.working() && furnace.progress() == 3 && furnace.getItem(0).getCount() == 1
+                    && furnace.getFluid(4).isEmpty(), "overheating interrupts an active recipe without consuming ordinary IO");
+            saved = furnace.saveWithoutMetadata(registries); saved.putDouble("Temperature", 1200);
+            furnace.loadCustomOnly(saved, registries);
+            for (int tick = 0; tick < 20 && !furnace.getItem(0).isEmpty(); tick++) furnace.tick();
+            helper.assertTrue(furnace.getItem(0).isEmpty() && furnace.getFluid(4).getAmount() == 125,
+                    "cooling back into range resumes and completes the recipe once");
+            helper.succeed();
+        };
+        // Keep these synchronous boundary checks clear of the ten-tick cooling update.
+        if (helper.getLevel().getGameTime() % 10 == 0) helper.runAfterDelay(1, checks); else checks.run();
     }
 
     @GameTest(template = "machine_empty", templateNamespace = CwiCore.ID)
@@ -239,11 +274,15 @@ public final class NativeMachineGameTests {
         solar.items().setStackInSlot(0, new ItemStack(Items.IRON_INGOT, 31));
         solar.fluids().fill(new FluidStack(Fluids.WATER, 1234), IFluidHandler.FluidAction.EXECUTE);
         var saved = solar.saveWithoutMetadata(helper.getLevel().registryAccess());
+        helper.assertTrue(saved.getInt("MachineDataVersion") == MachineBlockEntity.DATA_VERSION, "current machine storage has a named format version");
+        saved.remove("MachineDataVersion"); // Original native saves predate the marker; their storage shape is unchanged.
         solar.items().setStackInSlot(0, ItemStack.EMPTY);
         solar.fluids().drain(3000, IFluidHandler.FluidAction.EXECUTE);
         solar.loadCustomOnly(saved, helper.getLevel().registryAccess());
         helper.assertTrue(solar.getItem(0).getCount() == 31, "saved tray inventory survives reload");
         helper.assertTrue(solar.getFluid(0).getAmount() == 1234, "saved fluid survives reload");
+        helper.assertTrue(solar.saveWithoutMetadata(helper.getLevel().registryAccess()).getInt("MachineDataVersion") == MachineBlockEntity.DATA_VERSION,
+                "legacy unversioned storage rewrites as the current version without losing inventory/fluid");
         LavaExtractorBlockEntity lava = helper.getBlockEntity(lavaPos);
         helper.assertTrue(lava.fluids().fill(new FluidStack(Fluids.WATER, 1000), IFluidHandler.FluidAction.EXECUTE) == 0, "extractor refuses foreign fluid");
         helper.assertTrue(lava.getFluidCapability(Direction.UP) == null && lava.getFluidCapability(Direction.DOWN) == null, "extractor blocks vertical fluid IO");

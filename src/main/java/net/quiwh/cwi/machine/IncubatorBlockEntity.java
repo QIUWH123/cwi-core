@@ -1,7 +1,6 @@
 package net.quiwh.cwi.machine;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
@@ -81,9 +80,7 @@ public final class IncubatorBlockEntity extends MachineBlockEntity {
                 lane.clear(); changed(); holder = null;
             }
             if (holder == null) {
-                var candidates = level.getRecipeManager().getAllRecipesFor(MachineRecipes.INCUBATING.recipeType()).stream()
-                        .sorted(Comparator.comparing(recipe -> recipe.id().toString()))
-                        .filter(recipe -> plateRecipe(recipe.value()) && RecipeTransaction.matches(recipe.value(), view, null, 1)).toList();
+                var candidates = lane.candidates.find(level.getRecipeManager(), MachineRecipes.INCUBATING.recipeType(), view, null);
                 holder = candidates.stream().filter(recipe -> hasWorkingSpeed(Math.max(64, recipe.value().minimumRpm()))).findFirst().orElse(null);
                 float required = holder != null ? Math.max(64, holder.value().minimumRpm())
                         : candidates.isEmpty() ? 64 : Math.max(64, candidates.getFirst().value().minimumRpm());
@@ -160,6 +157,7 @@ public final class IncubatorBlockEntity extends MachineBlockEntity {
         }
     }
     private static final class Lane {
+        final RecipeCandidates candidates = new RecipeCandidates(IncubatorBlockEntity::plateRecipe);
         ResourceLocation recipeId; ItemStack plate = ItemStack.EMPTY; int progress, duration; String fingerprint = ""; float requiredRpm = 64; boolean requirementDirty = true, hasCandidate;
         boolean active() { return recipeId != null; }
         void clear() { recipeId = null; plate = ItemStack.EMPTY; progress = duration = 0; fingerprint = ""; requiredRpm = 64; requirementDirty = true; hasCandidate = false; }

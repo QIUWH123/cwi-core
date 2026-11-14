@@ -11,7 +11,8 @@ ServerEvents.recipes(event => {
     'minecraft:cobblestone'
   )
     .processingTime(200)
-    .heatRequirement('heated')
+    .heated()
+    // Optional numeric range: .minimumHeat(1200).maximumHeat(1600)
     .id('cwi:example/blast_furnace')
 
   event.recipes.cwi.incubating(
@@ -34,7 +35,7 @@ ServerEvents.recipes(event => {
     'minecraft:clay_ball',
     ['2x #c:sands', Fluid.of('minecraft:water', 250)]
   )
-    .processingTime(100) // Base ticks at 256 RPM; a batch lasts 200 ticks at 128 RPM.
+    .processingTime(100) // Create mixer base time: 16 active ticks at 256 RPM, 31 at 128 RPM.
     .minimumRpm(16)
     .id('cwi:example/mixing_vessel')
 

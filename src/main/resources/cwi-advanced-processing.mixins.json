@@ -1,0 +1,46 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.quiwh.cwi.mixin.processing",
+  "compatibilityLevel": "JAVA_21",
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  },
+  "mixins": [
+    "ProcessingParamsMixin",
+    "TankSegmentAccess",
+    "SmartWorkMixin",
+    "MillstoneAdvancedMixin",
+    "RollingAdvancedMixin",
+    "VibratingAdvancedMixin",
+    "ProcessingRecipeMixin",
+    "RecipePriorityMixin",
+    "CrusherAdvancedMixin",
+    "SawAdvancedMixin",
+    "BasinAdvancedMixin",
+    "BasinRecipeAdvancedMixin",
+    "MixerAdvancedMixin",
+    "LidAdvancedMixin",
+    "BasinHeatAccess",
+    "CentrifugeAdvancedMixin",
+    "VatAdvancedMixin",
+    "CompactingAdvancedMixin",
+    "CompressorAdvancedMixin",
+    "TfmgDistillationAdvancedMixin",
+    "DieselDistillationAdvancedMixin",
+    "DeployerAdvancedMixin",
+    "DeployerRecipeAdvancedMixin",
+    "SpoutAdvancedMixin",
+    "DrainAdvancedMixin",
+    "DrainInsertionMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "plugin": "net.quiwh.cwi.mixin.processing.AdvancedMixinPlugin",
+  "client": [
+    "NativeJeiMixin",
+    "NativeBasinJeiMixin",
+    "NativeFoundryJeiMixin"
+  ]
+}

@@ -24,6 +24,14 @@ public final class FurnaceHatchBlockEntity extends BlockEntity {
         public int getSlotLimit(int slot) { var h = handler(); return h == null ? 0 : h.getSlotLimit(slot); }
         public boolean isItemValid(int slot, ItemStack stack) { var h = handler(); return h != null && h.isItemValid(slot,stack); }
     };
+    private final IItemHandler outputProxy = new IItemHandler() {
+        public int getSlots() { return Math.max(0, itemProxy.getSlots() - 8); }
+        public ItemStack getStackInSlot(int slot) { return itemProxy.getStackInSlot(slot + 8); }
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) { return stack; }
+        public ItemStack extractItem(int slot, int amount, boolean simulate) { return itemProxy.extractItem(slot + 8, amount, simulate); }
+        public int getSlotLimit(int slot) { return itemProxy.getSlotLimit(slot + 8); }
+        public boolean isItemValid(int slot, ItemStack stack) { return false; }
+    };
     private final IFluidHandler fluidProxy = new IFluidHandler() {
         private IFluidHandler handler() { var c = controller(); return c == null ? null : c.hatchFluids(); }
         public int getTanks() { var h = handler(); return h == null ? 0 : h.getTanks(); }
@@ -47,7 +55,9 @@ public final class FurnaceHatchBlockEntity extends BlockEntity {
         }
         return null;
     }
-    public IItemHandler getItemCapability(@Nullable Direction side) { return itemProxy; }
+    public IItemHandler getItemCapability(@Nullable Direction side) {
+        return side == Direction.DOWN ? outputProxy : itemProxy;
+    }
     public IFluidHandler getFluidCapability(@Nullable Direction side) { return fluidProxy; }
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.saveAdditional(tag,registries); tag.putLongArray("Controllers",owners.stream().mapToLong(BlockPos::asLong).toArray()); }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.loadAdditional(tag,registries); owners.clear(); for (long pos : tag.getLongArray("Controllers")) owners.add(BlockPos.of(pos)); if (tag.contains("Controller")) owners.add(BlockPos.of(tag.getLong("Controller"))); }

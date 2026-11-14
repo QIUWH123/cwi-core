@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.SimpleBakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
@@ -19,15 +20,37 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import net.neoforged.neoforge.client.model.BakedModelWrapper;
 import org.jetbrains.annotations.Nullable;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ModelEvent;
+import net.quiwh.cwi.CwiCore;
 
 /** Snapshot the native seven seeded quad queries once, then draw each face exactly once. */
+@EventBusSubscriber(modid = CwiCore.ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class EmissiveItemRendering {
     private static final Direction[] DIRECTIONS = Direction.values();
+    // Only the exact vanilla static model class is eligible. A bounded cache cannot
+    // retain unbounded models supplied by overrides; reload also releases old sprites.
+    private static final java.util.Map<BakedModel, Parts> STATIC_PARTS = new java.util.LinkedHashMap<>(256, .75f, true) {
+        @Override protected boolean removeEldestEntry(java.util.Map.Entry<BakedModel, Parts> entry) { return size() > 1024; }
+    };
     private EmissiveItemRendering() {}
 
     public record Parts(BakedModel normal, BakedModel emissive) {}
 
+    @SubscribeEvent
+    public static void modelsReloaded(ModelEvent.BakingCompleted event) { clearCache(); }
+    public static void clearCache() { synchronized (STATIC_PARTS) { STATIC_PARTS.clear(); } }
+
     public static Parts split(BakedModel model) {
+        if (model.getClass() == SimpleBakedModel.class) synchronized (STATIC_PARTS) {
+            return STATIC_PARTS.computeIfAbsent(model, EmissiveItemRendering::snapshot);
+        }
+        return snapshot(model);
+    }
+
+    private static Parts snapshot(BakedModel model) {
         var normal = new ArrayList<List<BakedQuad>>(7);
         var emissive = new ArrayList<List<BakedQuad>>(7);
         var random = RandomSource.create();

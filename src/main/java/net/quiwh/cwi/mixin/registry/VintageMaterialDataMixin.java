@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.quiwh.cwi.compat.VintageMaterialPolicy;
+import net.quiwh.cwi.compat.data.AddonRecipeData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,6 +18,6 @@ public abstract class VintageMaterialDataMixin {
     @Inject(method = "scanDirectory", at = @At("RETURN"))
     private static void cwi$removeMaterialData(ResourceManager manager, String directory, Gson gson,
                                                Map<ResourceLocation, JsonElement> definitions, CallbackInfo ci) {
-        VintageMaterialPolicy.filterData(directory, definitions);
+        AddonRecipeData.filter(directory, definitions);
     }
 }

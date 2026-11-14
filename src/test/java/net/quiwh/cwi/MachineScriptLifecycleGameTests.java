@@ -27,13 +27,20 @@ import net.quiwh.cwi.hammer.HammerRecipes;
 public final class MachineScriptLifecycleGameTests {
     @GameTest(template = "empty", templateNamespace = "cwi", batch = "cwi_script_lifecycle", timeoutTicks = 400)
     public static void examplesLoadAndReload(GameTestHelper helper) {
+        AdvancementPolicyGameTests.verifyLoaded(helper);
+        var protectionBefore = ProtectiveEnchantmentGameTests.verifyScripts(helper);
+        AddonDataGameTests.verify(helper.getLevel());
+        ManualApplicationGameTests.verifyScripts(helper);
         verifyRollingExample(helper.getLevel());
         EquipmentUpgradeGameTests.verifyScripts(helper.getLevel());
         var schemaBefore = OptionalSchemaGameTests.verify(helper.getLevel());
+        var nativeBefore = NativeAdvancedGameTests.verifyScripts(helper);
+        if (net.neoforged.fml.ModList.get().isLoaded("kubejs_create")) CallableRecipeGameTests.verifyAssemblyVisibility(helper);
         var upgradeBefore = EquipmentUpgradeGameTests.scriptFingerprint(helper.getLevel());
         var upgradeInstance = EquipmentUpgradeGameTests.script(helper.getLevel(), "example/feather_falling_manual_only");
         var server = helper.getLevel().getServer();
         List<RecipeHolder<MachineRecipe>> before = verifyExamples(helper.getLevel());
+        var orderedBefore = net.quiwh.cwi.machine.MachineRecipeIndex.sorted(helper.getLevel().getRecipeManager(), MachineRecipes.MIXING.recipeType());
         var contractsBefore = verifyMachineContracts(helper.getLevel());
         List<RecipeHolder<HammerRecipe>> hammerBefore = verifyHammerExamples(helper.getLevel());
         var callableBefore = callableFingerprints(helper.getLevel());
@@ -47,7 +54,12 @@ public final class MachineScriptLifecycleGameTests {
         server.reloadResources(server.getPackRepository().getSelectedIds()).whenComplete((unused, failure) -> server.execute(() -> {
             try {
                 if (failure != null) throw new AssertionError("Server data reload failed", failure);
+                AdvancementPolicyGameTests.verifyLoaded(helper);
+                check(protectionBefore.equals(ProtectiveEnchantmentGameTests.verifyScripts(helper)), "protection definitions survive actual reload");
+                AddonDataGameTests.verify(helper.getLevel());
+                ManualApplicationGameTests.verifyScripts(helper);
                 verifyRollingExample(helper.getLevel());
+                if (net.neoforged.fml.ModList.get().isLoaded("kubejs_create")) CallableRecipeGameTests.verifyAssemblyVisibility(helper);
                 check(interactionsBefore.equals(WorldInteractionGameTests.verifyScripts(helper.getLevel())), "world interaction rules changed across reload");
                 check(interactionInstance != net.quiwh.cwi.interaction.InteractionRecipes.rules(helper.getLevel(),
                         net.quiwh.cwi.interaction.InteractionRecipes.Kind.ITEM_IMPACT).getFirst().value(),
@@ -62,7 +74,10 @@ public final class MachineScriptLifecycleGameTests {
                 check(upgradeInstance != EquipmentUpgradeGameTests.script(helper.getLevel(), "example/feather_falling_manual_only"), "reload must reconstruct equipment recipe");
                 check(upgradeBefore.equals(EquipmentUpgradeGameTests.scriptFingerprint(helper.getLevel())), "upgrade definitions changed or duplicated after reload");
                 check(schemaBefore.equals(OptionalSchemaGameTests.verify(helper.getLevel())), "Test.js changed after reload");
+                check(nativeBefore.equals(NativeAdvancedGameTests.verifyScripts(helper)), "advanced native examples changed after reload");
                 var after = verifyExamples(helper.getLevel());
+                var orderedAfter = net.quiwh.cwi.machine.MachineRecipeIndex.sorted(helper.getLevel().getRecipeManager(), MachineRecipes.MIXING.recipeType());
+                check(orderedBefore != orderedAfter, "actual reload must discard the sorted machine recipe cache");
                 var contractsAfter = verifyMachineContracts(helper.getLevel());
                 for (int index = 0; index < contractsBefore.size(); index++) {
                     check(contractsBefore.get(index).value() != contractsAfter.get(index).value(), "reload did not reconstruct shorthand recipe");
@@ -93,6 +108,21 @@ public final class MachineScriptLifecycleGameTests {
             if (holder.id().getNamespace().equals("cwi") && holder.id().getPath().startsWith("callable/"))
                 map.put(holder.id().toString(), net.minecraft.world.item.crafting.Recipe.CODEC.encodeStart(ops, holder.value()).getOrThrow().toString());
         }
+        var advanced = (MachineRecipe)level.getRecipeManager().byKey(ResourceLocation.parse("cwi:callable/vessel_advanced")).orElseThrow().value();
+        check(advanced.priority()==10 && advanced.outputPools().size()==2 && advanced.outputPools().getFirst().showOutputs()
+                && !advanced.outputPools().getLast().showOutputs(), "KubeJS pools append and independently retain visibility");
+        check(advanced.itemInputs().getFirst().settings().catalyst() && advanced.itemInputs().get(1).settings().damage()==10
+                && advanced.itemInputs().get(1).ingredient().test(new ItemStack(Items.IRON_SWORD)), "native replacement preserves tool/catalyst semantics: " + MachineRecipes.MIXING.serializer().codec().codec().encodeStart(ops, advanced).getOrThrow());
+        check(advanced.fluidInputs().getFirst().settings().interval()==2 && advanced.fluidInputs().getFirst().settings().clock()==net.quiwh.cwi.machine.recipe.EntrySettings.Clock.RECIPE,
+                "script recipe-clock interval reaches native runtime");
+        var replaced = (MachineRecipe)level.getRecipeManager().byKey(ResourceLocation.parse("cwi:callable/vessel_replace")).orElseThrow().value();
+        check(replaced.itemInputs().get(1).settings().damage()==10 && replaced.itemInputs().get(1).ingredient().test(new ItemStack(Items.STONE_SWORD)),
+                "native input replacement retains tool wear");
+        check(replaced.outputPools().getFirst().entries().getFirst().stack().is(Items.FLINT)
+                && replaced.outputPools().getFirst().entries().getFirst().weight()==7, "descriptor replacements support weighted pool outputs");
+        var energy = (MachineRecipe)level.getRecipeManager().byKey(ResourceLocation.parse("cwi:callable/vessel_energy")).orElseThrow().value();
+        check(energy.itemInputs().getFirst().settings().energy()==20 && energy.itemInputs().getFirst().settings().interval()==2,
+                "copied energy descriptor retains cost and interval");
         check(map.size() >= 10, "callable matrix recipes missing");
         return map;
     }
@@ -110,6 +140,7 @@ public final class MachineScriptLifecycleGameTests {
         var incubator = find(level, MachineRecipes.INCUBATING, "incubating");
         var mixer = find(level, MachineRecipes.MIXING, "mixing_vessel");
         var hot = furnace.value();
+        check(hot.maximumHeat() == Integer.MAX_VALUE, "existing furnace recipes have no temperature cap by default");
         check(hot.itemInputs().size() == 1 && hot.itemInputs().getFirst().ingredient().test(new ItemStack(Items.COBBLESTONE))
                 && hot.itemInputs().getFirst().count() == 1, "furnace script input");
         check(hot.itemOutputs().isEmpty() && hot.fluidOutputs().size() == 1 && hot.fluidOutputs().getFirst().stack().is(Fluids.LAVA)
@@ -141,7 +172,7 @@ public final class MachineScriptLifecycleGameTests {
         check(mix.fluidInputs().size() == 1 && mix.fluidInputs().getFirst().ingredient().test(new FluidStack(Fluids.WATER, 250))
                 && mix.fluidInputs().getFirst().ingredient().amount() == 250, "mixer script fluid input");
         check(mix.itemOutputs().size() == 1 && mix.itemOutputs().getFirst().stack().is(Items.CLAY_BALL)
-                && mix.getProcessingDuration() == 100 && mix.minimumRpm() == 16 && mix.durationAtRpm(128) == 200,
+                && mix.getProcessingDuration() == 100 && mix.minimumRpm() == 16 && mix.durationAtRpm(128) == 31,
                 "mixer script output/time/RPM DSL");
         return List.of(furnace, incubator, mixer);
     }
@@ -169,6 +200,10 @@ public final class MachineScriptLifecycleGameTests {
 
     private static List<RecipeHolder<MachineRecipe>> verifyMachineContracts(Level level) {
         var furnace = contract(level, MachineRecipes.BLAST_FURNACE, "furnace");
+        check(furnace.value().minimumHeat() == 2000 && furnace.value().maximumHeat() == 2200,
+                "KubeJS temperature bounds survive native loading and reload");
+        check(furnace.value().getProcessingDuration() == 80 && furnace.value().getRequiredHeat() == com.simibubi.create.content.processing.recipe.HeatCondition.SUPERHEATED,
+                "native ticks duration and superheated schema helper");
         var hot = furnace.value();
         check(hot.itemInputs().size() == 2 && hot.itemInputs().get(0).count() == 2
                 && hot.itemInputs().get(0).ingredient().test(new ItemStack(Items.SAND))

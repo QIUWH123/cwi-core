@@ -13,13 +13,25 @@ public final class FluidRecipeValue extends RecipeValue {
                      Double chance, Boolean timing) {
         super(source, id, snapshot, amount, patch, chance, null, timing);
     }
+    private FluidRecipeValue(Source source, ResourceLocation id, String snapshot, int amount, boolean patch,
+                    Double chance, Double weight, Boolean timing, net.quiwh.cwi.machine.recipe.EntrySettings settings) {
+        super(source, id, snapshot, amount, patch, chance, weight, timing, settings);
+    }
     @Override FluidRecipeValue copy(Double chance, Double weight, Boolean timing) {
-        return new FluidRecipeValue(source, id, snapshot, quantity, componentPatch, chance, timing);
+        return new FluidRecipeValue(source, id, snapshot, quantity, componentPatch, chance, null, timing, settings);
     }
     @Override boolean fluid() { return true; }
     public FluidRecipeValue withChance(Object probability) { return copy(probability(probability), null, timing); }
-    public FluidRecipeValue perTick() { return perTick(true); }
-    public FluidRecipeValue perTick(Object enabled) { return copy(chance, null, bool(enabled)); }
+    public FluidRecipeValue perTick() { return perTick(1); }
+    public FluidRecipeValue perTick(Object interval) { return perTick(interval, "working"); }
+    public FluidRecipeValue perTick(Object interval, Object clock) {
+        var next = periodic(interval, clock, settings);
+        return new FluidRecipeValue(source, id, snapshot, quantity, componentPatch, chance, weight, next.periodic(), next);
+    }
+    public FluidRecipeValue catalyst() {
+        return new FluidRecipeValue(source, id, snapshot, quantity, componentPatch, chance, weight, timing,
+                new net.quiwh.cwi.machine.recipe.EntrySettings(settings.interval(), settings.clock(), true, settings.damage(), settings.energy()));
+    }
     public FluidStack toStack(Context cx) { requireStack(); return stack(cx); }
     FluidStack stack(Context cx) {
         if (source == Source.TAG || source == Source.INGREDIENT)

@@ -12,8 +12,8 @@ import dev.latvian.mods.kubejs.recipe.RecipeScriptContext;
 import dev.latvian.mods.kubejs.recipe.RecipeTypeRegistryContext;
 import dev.latvian.mods.kubejs.recipe.component.RecipeComponent;
 import dev.latvian.mods.kubejs.recipe.component.RecipeComponentType;
-import dev.latvian.mods.kubejs.recipe.schema.RecipeSchemaData;
 import dev.latvian.mods.kubejs.recipe.schema.JsonRecipeSchemaLoader;
+import dev.latvian.mods.kubejs.recipe.schema.RecipeSchemaData;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeSchemaRegistry;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeSchemaStorage;
 import dev.latvian.mods.kubejs.recipe.schema.postprocessing.RecipePostProcessorType;
@@ -22,6 +22,15 @@ import dev.latvian.mods.kubejs.util.RegistryAccessContainer;
 import dev.latvian.mods.kubejs.util.RegistryOpsContainer;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.ContextFactory;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -36,18 +45,8 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.quiwh.cwi.compat.CwiKubeJSPlugin;
-import net.quiwh.cwi.compat.CwiHammerRecipeComponents;
-import net.quiwh.cwi.compat.CwiMachineRecipeComponents;
-
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import net.quiwh.cwi.compat.kubejs.CwiHammerRecipeComponents;
+import net.quiwh.cwi.compat.kubejs.CwiMachineRecipeComponents;
 
 @GameTestHolder("cwi")
 @PrefixGameTestTemplate(false)
@@ -139,18 +138,21 @@ public final class MachineKubeJSRecipeTests {
                 var schema = RecipeSchemaData.CODEC.apply(registryContext).parse(registries.json(), json).getOrThrow();
                 var keys = schema.keys().orElseThrow();
                 check(keys.size() == (name.equals("incubating") ? 5 : name.equals("block_conversion") ? 4
-                        : name.equals("depot_conversion") ? 3 : 6), "physical schema keys for " + name);
+                        : name.equals("depot_conversion") ? 3 : name.equals("blast_furnace_processing") ? 8 : 6), "physical schema keys for " + name);
                 var methods=keys.stream().flatMap(key->key.functionNames().stream()).toList();
                 if (name.endsWith("conversion")) {
                     check(methods.contains("input") && methods.contains("target"), "DSL input/target methods for " + name);
                 } else {
-                    check(methods.contains("processingTime") && methods.contains("itemInputs"), "DSL duration/input methods for " + name);
+                    check(methods.contains("processingTime") && methods.contains("ingredients"), "DSL duration/input methods for " + name);
                 }
                 if (!name.endsWith("conversion")) {
+                    verifyNumericDuration(keys.stream().filter(key -> key.name().equals("processing_time"))
+                            .findFirst().orElseThrow().type(), context, name);
                     check(methods.contains("heatRequirement") == name.equals("blast_furnace_processing"), "heat is furnace-only");
+                    check(methods.contains("maximumHeat") == name.equals("blast_furnace_processing"), "maximum temperature is furnace-only");
                     check(methods.contains("minimumRpm") != name.equals("blast_furnace_processing"), "RPM is kinetic-only");
-                    check(methods.contains("fluidInputs") != name.equals("incubating"), "incubator has no fluid input");
-                    check(methods.contains("itemOutputs") != name.equals("blast_furnace_processing"), "furnace has molten outputs only");
+                    check(methods.contains("results"), "canonical results setter");
+
                     check(methods.contains("incubationDisplay") == name.equals("incubating"), "incubator-only display metadata method");
                 }
                 check(methods.contains("requireStage") == name.endsWith("conversion"), "hammer conversion has a stage method");
@@ -177,6 +179,20 @@ public final class MachineKubeJSRecipeTests {
             var loaded = storage.namespace("cwi").getRegisteredOrThrow(name).schema;
             check(loaded.constructors().containsKey(0), "native loader supplies zero-argument fluent constructor for " + name);
             check(loaded.constructors().get(0).keys.isEmpty(), "zero-argument constructor has no required positional keys for " + name);
+        }
+    }
+
+    static <T> void verifyNumericDuration(RecipeComponent<T> component, RecipeScriptContext context, String name) {
+        var encoded = component.codec().encodeStart(context.ops().json(), component.wrap(context, 80)).getOrThrow();
+        check(encoded.getAsInt() == 80, "numeric processing ticks retained for " + name);
+        for (String duration : List.of("5s", "1m")) {
+            boolean rejected = false;
+            try {
+                component.wrap(context, duration);
+            } catch (RuntimeException expected) {
+                rejected = true;
+            }
+            check(rejected, "processing duration must reject time string " + duration + " for " + name);
         }
     }
 

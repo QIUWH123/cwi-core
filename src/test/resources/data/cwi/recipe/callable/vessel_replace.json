@@ -1,0 +1,73 @@
+{
+  "type": "cwi:mixing_vessel_mixing",
+  "ingredients": [
+    {
+      "ingredient": {
+        "item": "minecraft:heart_of_the_sea"
+      },
+      "catalyst": true
+    },
+    {
+      "ingredient": {
+        "item": "minecraft:iron_sword"
+      },
+      "damage": 10
+    },
+    {
+      "ingredient": {
+        "type": "neoforge:single",
+        "fluid": "minecraft:water"
+      },
+      "amount": 5,
+      "per_tick": 2,
+      "tick_mode": "recipe"
+    }
+  ],
+  "results": [
+    {
+      "id": "minecraft:clay_ball",
+      "count": 2
+    },
+    {
+      "stack": {
+        "id": "minecraft:lava",
+        "amount": 5
+      },
+      "per_tick": 2
+    }
+  ],
+  "priority": 10,
+  "output_pools": [
+    {
+      "entries": [
+        {
+          "stack": {
+            "id": "minecraft:gravel",
+            "count": 2
+          },
+          "weight": 3
+        },
+        {
+          "stack": {
+            "id": "minecraft:cobblestone"
+          }
+        }
+      ],
+      "show_outputs": true
+    },
+    {
+      "entries": [
+        {
+          "stack": {
+            "id": "minecraft:redstone"
+          }
+        },
+        {
+          "stack": {
+            "id": "minecraft:glowstone_dust"
+          }
+        }
+      ]
+    }
+  ]
+}

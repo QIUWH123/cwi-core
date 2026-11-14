@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "cwi:chain_conveyor_carriage"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "cwi:blocks/chain_conveyor_carriage"
+}

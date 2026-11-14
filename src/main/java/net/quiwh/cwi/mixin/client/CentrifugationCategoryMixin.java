@@ -51,6 +51,6 @@ abstract class CentrifugationCategoryMixin {
     @ModifyArgs(method = "draw(Lcom/negodya1/vintageimprovements/content/kinetics/centrifuge/CentrifugationRecipe;Lmezz/jei/api/gui/ingredient/IRecipeSlotsView;Lnet/minecraft/client/gui/GuiGraphics;DD)V",
             at = @At(value = "INVOKE", target = "Lcom/simibubi/create/foundation/gui/AllGuiTextures;render(Lnet/minecraft/client/gui/GuiGraphics;II)V", ordinal = 1))
     private void cwi$moveOutputArrow(Args args, CentrifugationRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
-        if (recipe.getRollableResults().size() > 4) args.set(1, 94);
+        if (net.quiwh.cwi.compat.jei.NativeProcessingJei.outputCount(recipe) > 4) args.set(1, 94);
     }
 }

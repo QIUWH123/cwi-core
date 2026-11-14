@@ -1,0 +1,8 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.quiwh.cwi.mixin.carriage",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["LoadedConveyorMixin"],
+  "injectors": {"defaultRequire": 1}
+}

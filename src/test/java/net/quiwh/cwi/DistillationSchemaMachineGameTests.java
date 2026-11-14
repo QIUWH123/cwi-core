@@ -39,8 +39,9 @@ public final class DistillationSchemaMachineGameTests {
         CokeOvenBlockEntity oven = helper.getBlockEntity(pos);
         oven.initialize(); oven.createNextTick = false;
         oven.inventory.setStackInSlot(0, new ItemStack(Items.QUARTZ_BRICKS));
-        oven.executeRecipe();
-        for (int i = 0; i < 20; i++) oven.tickRecipe();
+        oven.currentRecipe = oven.findRecipe();
+        helper.assertTrue(oven.currentRecipe != null, "Test.js coking matches the native input");
+        for (int i = 0; i < 20; i++) oven.manageRecipe();
         var saved = oven.saveWithoutMetadata(helper.getLevel().registryAccess());
         helper.assertTrue(saved.getInt("Timer") == 20, "native coke oven saves mid-recipe timer; " + saved);
         oven.setRemoved();
@@ -48,7 +49,8 @@ public final class DistillationSchemaMachineGameTests {
         restored.setLevel(helper.getLevel()); restored.loadCustomOnly(saved, helper.getLevel().registryAccess());
         helper.getLevel().setBlockEntity(restored); restored.initialize(); restored.createNextTick = false;
         oven = restored;
-        for (int i = 0; i < 21; i++) oven.tickRecipe();
+        oven.currentRecipe = oven.findRecipe();
+        for (int i = 0; i < 21; i++) oven.manageRecipe();
         helper.assertTrue(oven.inventory.isEmpty(), "Test.js coking consumes the input");
         // TFMG emits the fluid amounts once per processing tick, rather than once per batch.
         helper.assertTrue(oven.primaryTank.getFluid().is(Fluids.WATER) && oven.primaryTank.getFluidAmount() == 40

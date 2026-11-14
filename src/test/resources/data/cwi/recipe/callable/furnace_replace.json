@@ -1,0 +1,15 @@
+{
+  "type": "cwi:blast_furnace_processing",
+  "ingredients": [{"item": "minecraft:sand"}],
+  "results": [{"id": "minecraft:brick"}],
+  "output_pools": [
+    {
+      "entries": [
+        {"stack": {"id": "minecraft:gravel", "count": 2}, "weight": 3},
+        {"stack": {"id": "minecraft:cobblestone"}}
+      ],
+      "show_outputs": true
+    },
+    {"entries": [{"stack": {"id": "minecraft:redstone"}}]}
+  ]
+}

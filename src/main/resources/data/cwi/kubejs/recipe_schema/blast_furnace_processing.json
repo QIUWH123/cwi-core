@@ -1,45 +1,44 @@
 {
   "keys": [
     {
-      "name": "item_inputs",
-      "role": "input",
-      "type": {
-        "type": "list",
-        "component": "cwi:machine_item_input",
-        "min": 0,
-        "max": 64
-      },
-      "optional": [],
-      "function_names": [
-        "itemInputs"
-      ]
-    },
-    {
-      "name": "fluid_inputs",
-      "role": "input",
-      "type": {
-        "type": "list",
-        "component": "cwi:machine_fluid_input",
-        "min": 0,
-        "max": 64
-      },
-      "optional": [],
-      "function_names": [
-        "fluidInputs"
-      ]
-    },
-    {
-      "name": "fluid_outputs",
+      "name": "results",
       "role": "output",
       "type": {
         "type": "list",
-        "component": "cwi:machine_fluid_output",
+        "component": {
+          "type": "either",
+          "left": "cwi:machine_fluid_output",
+          "right": "cwi:machine_item_output"
+        },
         "min": 0,
-        "max": 64
+        "max": 128
       },
       "optional": [],
       "function_names": [
-        "fluidOutputs"
+        "results"
+      ]
+    },
+    {
+      "name": "ingredients",
+      "role": "input",
+      "type": {
+        "type": "list",
+        "component": {
+          "type": "either",
+          "left": "cwi:machine_fluid_input",
+          "right": "cwi:machine_item_input"
+        },
+        "min": 0,
+        "max": 128,
+        "spread": {
+          "type": "either",
+          "left": "cwi:machine_fluid_input",
+          "right": "cwi:machine_item_input"
+        }
+      },
+      "optional": [],
+      "function_names": [
+        "ingredients"
       ]
     },
     {
@@ -59,16 +58,68 @@
       ]
     },
     {
+      "name": "maximum_heat",
+      "type": "non_negative_int",
+      "optional": 2147483647,
+      "function_names": [
+        "maximumHeat"
+      ]
+    },
+    {
       "name": "heat_requirement",
       "type": "string",
       "optional": "none",
       "function_names": [
         "heatRequirement"
       ]
+    },
+    {
+      "name": "priority",
+      "type": {
+        "type": "int"
+      },
+      "optional": 0,
+      "function_names": [
+        "priority"
+      ]
+    },
+    {
+      "name": "output_pools",
+      "role": "output",
+      "type": {
+        "type": "list",
+        "component": "cwi:machine_output_pool",
+        "min": 0,
+        "max": 64
+      },
+      "optional": [],
+      "function_names": []
     }
   ],
-  "constructors": [{"keys": []}],
+  "constructors": [
+    {
+      "keys": []
+    },
+    {
+      "keys": [
+        "results",
+        "ingredients"
+      ]
+    }
+  ],
   "unique": [
-    "fluid_outputs"
-  ]
+    "results"
+  ],
+  "functions": {
+    "heated": {
+      "type": "set",
+      "key": "heat_requirement",
+      "value": "heated"
+    },
+    "superheated": {
+      "type": "set",
+      "key": "heat_requirement",
+      "value": "superheated"
+    }
+  }
 }

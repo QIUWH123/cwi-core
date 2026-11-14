@@ -16,15 +16,22 @@ public abstract sealed class RecipeValue permits ItemRecipeValue, FluidRecipeVal
     final boolean componentPatch;
     final Double chance, weight;
     final Boolean timing;
+    final net.quiwh.cwi.machine.recipe.EntrySettings settings;
 
     RecipeValue(Source source, ResourceLocation id, String snapshot, int quantity, boolean componentPatch,
                 Double chance, Double weight, Boolean timing) {
+        this(source, id, snapshot, quantity, componentPatch, chance, weight, timing,
+                net.quiwh.cwi.machine.recipe.EntrySettings.tick(Boolean.TRUE.equals(timing)));
+    }
+    RecipeValue(Source source, ResourceLocation id, String snapshot, int quantity, boolean componentPatch,
+                Double chance, Double weight, Boolean timing, net.quiwh.cwi.machine.recipe.EntrySettings settings) {
+        this.settings = settings;
         this.source = source; this.id = id; this.snapshot = snapshot; this.quantity = quantity;
         this.componentPatch = componentPatch; this.chance = chance; this.weight = weight; this.timing = timing;
     }
     abstract RecipeValue copy(Double chance, Double weight, Boolean timing);
     abstract boolean fluid();
-    final boolean metadata() { return chance != null || weight != null || timing != null; }
+    final boolean metadata() { return chance != null || weight != null || timing != null || !settings.equals(net.quiwh.cwi.machine.recipe.EntrySettings.DEFAULT); }
     final void requireStack() {
         if (source == Source.TAG || source == Source.INGREDIENT || metadata())
             throw new IllegalArgumentException("toStack() requires a concrete value without explicit recipe metadata");
@@ -39,6 +46,16 @@ public abstract sealed class RecipeValue permits ItemRecipeValue, FluidRecipeVal
         if (!(raw instanceof Number n) || !Double.isFinite(n.doubleValue()))
             throw new IllegalArgumentException(name + " must be a finite number");
         return n.doubleValue();
+    }
+    static net.quiwh.cwi.machine.recipe.EntrySettings periodic(Object raw, Object mode, net.quiwh.cwi.machine.recipe.EntrySettings old) {
+        raw = RecipeValues.unwrap(raw); mode = RecipeValues.unwrap(mode);
+        int interval = raw instanceof Boolean b ? b ? 1 : 0 : RecipeValues.quantity(raw);
+        var clock = switch (String.valueOf(mode)) {
+            case "working" -> net.quiwh.cwi.machine.recipe.EntrySettings.Clock.WORKING;
+            case "recipe" -> net.quiwh.cwi.machine.recipe.EntrySettings.Clock.RECIPE;
+            default -> throw new IllegalArgumentException("perTick clock must be working or recipe");
+        };
+        return new net.quiwh.cwi.machine.recipe.EntrySettings(interval, clock, old.catalyst(), old.damage(), old.energy());
     }
     static boolean bool(Object raw) {
         raw = RecipeValues.unwrap(raw);

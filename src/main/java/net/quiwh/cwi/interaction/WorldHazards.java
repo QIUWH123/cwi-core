@@ -9,7 +9,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.List;
 
@@ -20,7 +19,7 @@ public final class WorldHazards {
             for (var holder : InteractionRecipes.rules(entity.level(), InteractionRecipes.Kind.INVENTORY_HAZARD)) {
                 var rule = (InteractionRules.InventoryHazard) holder.value().rule();
                 if (gameTime % rule.interval() == 0 && count(player, rule.input()) > 0)
-                    apply(entity, rule.damage(), rule.damageType(), rule.fireTicks(), rule.effects());
+                    apply(entity, rule.damage(), rule.damageType(), rule.fireTicks(), rule.effects(), rule.protection(), gameTime);
             }
             for (var holder : InteractionRecipes.rules(entity.level(), InteractionRecipes.Kind.TOXIN_EXPOSURE)) {
                 var rule = (InteractionRules.Toxin) holder.value().rule();
@@ -37,16 +36,9 @@ public final class WorldHazards {
                 data.putDouble(rule.stateKey(), next);
             }
         }
-        for (var holder : InteractionRecipes.rules(entity.level(), InteractionRecipes.Kind.FLUID_HAZARD)) {
-            var rule = (InteractionRules.FluidHazard) holder.value().rule();
-            if (gameTime % rule.interval() != 0) continue;
-            // NeoForge tracks both source and flowing contact per entity. No world-entity scan.
-            boolean touching = false;
-            for (var fluid : rule.fluid().getStacks()) {
-                if (entity.getFluidTypeHeight(fluid.getFluid().getFluidType()) > 0) { touching = true; break; }
-            }
-            if (touching) apply(entity, rule.damage(), rule.damageType(), rule.fireTicks(), rule.effects());
-        }
+        // NeoForge already tracks source/flowing contact. Dry entities need no fluid-rule lookup.
+        if (!entity.isInFluidType()) return;
+        InteractionRecipes.fluidHazards(entity.level().getRecipeManager(), entity.level().registryAccess()).tick(entity, gameTime);
     }
 
     public static void afterAttack(LivingEntity target, Player attacker) {
@@ -74,12 +66,20 @@ public final class WorldHazards {
         }
         return count;
     }
-    private static void apply(LivingEntity entity, float damage, ResourceLocation type, int fireTicks, List<InteractionRules.Effect> effects) {
+    private static void apply(LivingEntity entity, float damage, ResourceLocation type, int fireTicks, List<InteractionRules.Effect> effects, net.quiwh.cwi.equipment.protection.HazardProtection protection, long gameTime) {
         var holder = entity.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
                 .getHolder(ResourceKey.create(Registries.DAMAGE_TYPE, type));
-        if (damage > 0 && holder.isPresent()) entity.hurt(new DamageSource(holder.get()), damage);
-        if (fireTicks > 0) entity.setRemainingFireTicks(Math.max(entity.getRemainingFireTicks(), fireTicks));
-        effects.forEach(effect -> addEffect(entity, effect));
+        boolean meaningful = damage > 0 && holder.isPresent() || fireTicks > 0 || effects.stream()
+                .anyMatch(effect -> BuiltInRegistries.MOB_EFFECT.containsKey(effect.id()));
+        float remaining = protection.remaining(entity, gameTime, meaningful);
+        if (remaining == 0) return;
+        if (damage > 0 && holder.isPresent()) entity.hurt(new DamageSource(holder.get()), damage * remaining);
+        int ignition = (int) (fireTicks * remaining);
+        if (ignition > 0) entity.setRemainingFireTicks(Math.max(entity.getRemainingFireTicks(), ignition));
+        for (var effect : effects) {
+            int duration = (int) (effect.duration() * remaining);
+            if (duration > 0) addEffect(entity, new InteractionRules.Effect(effect.id(), duration, effect.amplifier()));
+        }
     }
     private static void addEffect(LivingEntity entity, InteractionRules.Effect effect) {
         BuiltInRegistries.MOB_EFFECT.getHolder(effect.id()).ifPresent(holder ->

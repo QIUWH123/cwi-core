@@ -43,7 +43,7 @@ public final class EquipmentUpgradeRecipe implements CraftingRecipe {
         if (enchantment == null || maxLevel < 1 || maxLevel > 255) throw new IllegalArgumentException("Upgrade cap must be in [1,255]");
         if (!Double.isFinite(durabilityMultiplier) || durabilityMultiplier < 0) throw new IllegalArgumentException("Durability multiplier must be finite and nonnegative");
         this.input = input; this.output = output.copy(); this.ingredients = List.copyOf(ingredients);
-        this.enchantment = enchantment; this.maxLevel = maxLevel; this.durabilityMultiplier = durabilityMultiplier;
+        this.enchantment = enchantment; this.maxLevel = net.quiwh.cwi.equipment.protection.ProtectiveEnchantments.owns(enchantment) ? Math.min(maxLevel, enchantment.value().getMaxLevel()) : maxLevel; this.durabilityMultiplier = durabilityMultiplier;
     }
 
     public Ingredient input() { return input; }

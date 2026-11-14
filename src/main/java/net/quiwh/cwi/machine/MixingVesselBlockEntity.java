@@ -1,6 +1,5 @@
 package net.quiwh.cwi.machine;
 
-import java.util.Comparator;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 import com.simibubi.create.foundation.item.ItemHelper;
@@ -11,8 +10,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import com.simibubi.create.AllSoundEvents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.createmod.catnip.animation.AnimationTickHolder;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.quiwh.cwi.machine.recipe.MachineRecipe;
@@ -23,9 +24,10 @@ public final class MixingVesselBlockEntity extends MachineBlockEntity {
     private ResourceLocation recipeId;
     private String fingerprint = "";
     private int progress, duration, batch;
+    private VesselOperation operation;
     private float requiredRpm = 1;
     private int lastComparator = -1;
-    private int feedbackCooldown;
+    private final RecipeCandidates candidates = new RecipeCandidates();
     private final IItemHandler comparatorInventory = new net.neoforged.neoforge.items.wrapper.RangedWrapper(inventory, 0, 4);
     private final IItemHandler external = new IItemHandler() {
         public int getSlots() { return 6; }
@@ -40,8 +42,8 @@ public final class MixingVesselBlockEntity extends MachineBlockEntity {
     @Override public float minimumRequiredRpm() { return requiredRpm; }
     @Override protected void addMachineInfo(List<Component> tooltip) {
         super.addMachineInfo(tooltip);
-        MachineGoggles.progress(tooltip, progress, duration);
-        if (batch > 0) MachineGoggles.line(tooltip, Component.translatable("cwi.machine.batch", batch));
+        MachineGoggles.progress(tooltip, operation == null ? progress : (int)Math.round(operation.completed() * 1_000_000),
+                operation == null ? duration : 1_000_000);
     }
     public int comparatorSignal() { return ItemHelper.calcRedstoneFromInventory(comparatorInventory); }
     @Override protected void onInventoryChanged(int slot) {
@@ -55,18 +57,8 @@ public final class MixingVesselBlockEntity extends MachineBlockEntity {
     private void setRequiredRpm(float rpm) {
         if (requiredRpm != rpm) { requiredRpm = rpm; changed(); }
     }
-    @Override protected void changed() {
-        feedbackCooldown = 0;
-        super.changed();
-    }
-    private static long ingredientCount(RecipeHolder<MachineRecipe> holder) {
-        return holder.value().itemInputs().stream().mapToLong(MachineRecipe.ItemInput::count).sum();
-    }
     private List<RecipeHolder<MachineRecipe>> matchingRecipes() {
-        return level.getRecipeManager().getAllRecipesFor(MachineRecipes.MIXING.recipeType()).stream()
-                .sorted(Comparator.<RecipeHolder<MachineRecipe>>comparingLong(MixingVesselBlockEntity::ingredientCount).reversed()
-                        .thenComparing(recipe -> recipe.id().toString()))
-                .filter(recipe -> RecipeTransaction.matches(recipe.value(), inventory, tanks, 1)).toList();
+        return candidates.find(level.getRecipeManager(), MachineRecipes.MIXING.recipeType(), inventory, tanks);
     }
     public int progress() { return progress; }
     public int duration() { return duration; }
@@ -74,7 +66,7 @@ public final class MixingVesselBlockEntity extends MachineBlockEntity {
     public static int durationAtSpeed(int baseTicks, float rpm) {
         return MachineKinetics.mixerDuration(baseTicks, rpm);
     }
-    private void clearRecipe() { recipeId = null; fingerprint = ""; progress = duration = batch = 0; changed(); }
+    private void clearRecipe() { recipeId = null; operation = null; fingerprint = ""; progress = duration = batch = 0; changed(); }
 
     @Override public void tick() {
         super.tick();
@@ -88,19 +80,10 @@ public final class MixingVesselBlockEntity extends MachineBlockEntity {
             }
             return;
         }
-        if (!hasWorkingSpeed(1)) {
-            if (recipeId != null) clearRecipe();
-            if (feedbackCooldown-- <= 0) {
-                var candidates = matchingRecipes();
-                setRequiredRpm(candidates.isEmpty() ? 1 : Math.max(1, candidates.getFirst().value().minimumRpm()));
-                feedbackCooldown = 20;
-            }
-            setWorking(false); return;
-        }
         RecipeHolder<MachineRecipe> holder = recipeId == null ? null : level.getRecipeManager().byKey(recipeId)
                 .filter(recipe -> recipe.value() instanceof MachineRecipe && recipe.value().getType() == MachineRecipes.MIXING.recipeType())
                 .map(recipe -> (RecipeHolder<MachineRecipe>)(RecipeHolder<?>)recipe).orElse(null);
-        if (recipeId != null && (holder == null || !holder.value().fingerprint(level.registryAccess()).equals(fingerprint))) { clearRecipe(); holder = null; }
+        if (recipeId != null && (operation == null || holder == null || !holder.value().fingerprint(level.registryAccess()).equals(fingerprint))) { clearRecipe(); holder = null; }
         if (holder == null) {
             var candidates = matchingRecipes();
             holder = candidates.stream().filter(recipe -> hasWorkingSpeed(Math.max(1, recipe.value().minimumRpm()))).findFirst().orElse(null);
@@ -109,22 +92,37 @@ public final class MixingVesselBlockEntity extends MachineBlockEntity {
             if (holder == null) { setWorking(false); return; }
             recipeId = holder.id(); fingerprint = holder.value().fingerprint(level.registryAccess());
             duration = durationAtSpeed(holder.value().getProcessingDuration(), getSpeed());
-            batch = RecipeTransaction.maxBatch(holder.value(), inventory, tanks, 4); progress = 0; changed();
+            batch = 1; progress = 0; operation = new VesselOperation(level.random.nextLong()); changed();
         }
         MachineRecipe recipe = holder.value();
-        if (!hasWorkingSpeed(Math.max(1, recipe.minimumRpm())) || !RecipeTransaction.matches(recipe, inventory, tanks, batch)) { clearRecipe(); setWorking(false); return; }
-        boolean finishing = progress + 1 >= duration;
-        boolean startsWithFluid = progress == 0 && java.util.stream.IntStream.range(0,tanks.getTanks())
+        setRequiredRpm(Math.max(1, recipe.minimumRpm()));
+        if (!hasWorkingSpeed(requiredRpm)) { setWorking(false); return; }
+        operation.prepare(durationAtSpeed(recipe.getProcessingDuration(), getSpeed()));
+        boolean finishing = operation.finishing();
+        boolean startsWithFluid = operation.ticks() == 0 && java.util.stream.IntStream.range(0, tanks.getTanks())
                 .anyMatch(tank -> !getFluid(tank).isEmpty());
-        boolean committed = finishing ? RecipeTransaction.finishTick(recipe, inventory, tanks, batch, level.random)
-                : RecipeTransaction.tick(recipe, inventory, tanks, batch, level.random);
-        if (!committed) { clearRecipe(); setWorking(false); return; }
-        if (startsWithFluid) level.playSound(null,worldPosition,SoundEvents.BUBBLE_COLUMN_WHIRLPOOL_AMBIENT,
-                SoundSource.BLOCKS,.75f,Math.abs(getSpeed())<65?.75f:1.5f);
+        if (!VesselTransaction.step(recipe, operation, inventory, tanks, (net.minecraft.server.level.ServerLevel)level)) {
+            setChanged(); setWorking(false); return;
+        }
+        if (startsWithFluid) level.playSound(null, worldPosition, SoundEvents.BUBBLE_COLUMN_WHIRLPOOL_AMBIENT,
+                SoundSource.BLOCKS, .75f, Math.abs(getSpeed()) < 65 ? .75f : 1.5f);
         setWorking(true);
         if (finishing) clearRecipe();
-        else { progress++; setChanged(); if (progress % 20 == 0) sendData(); }
+        else {
+            progress = operation.ticks();
+            duration = progress + Math.max(1, (int)Math.ceil((1 - operation.completed()) * durationAtSpeed(recipe.getProcessingDuration(), getSpeed()) - 1e-8));
+            setChanged(); if (progress % 20 == 0) sendData();
+        }
     }
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
+    @Override public void tickAudio() {
+        super.tickAudio();
+        if (level == null || !getBlockState().getValue(MachineBlock.WORKING) || !hasWorkingSpeed(1)) return;
+        boolean slow = Math.abs(getSpeed()) < 65;
+        if (!slow || AnimationTickHolder.getTicks() % 2 != 0)
+            AllSoundEvents.MIXING.playAt(level, worldPosition, .75f, 1f, true);
+    }
+
     private void setWorking(boolean working) {
         if (level != null && getBlockState().getValue(MachineBlock.WORKING) != working) {
             level.setBlock(worldPosition, getBlockState().setValue(MachineBlock.WORKING, working), 3);
@@ -136,11 +134,13 @@ public final class MixingVesselBlockEntity extends MachineBlockEntity {
         if (recipeId != null) tag.putString("Recipe", recipeId.toString());
         tag.putString("Fingerprint", fingerprint); tag.putInt("Progress", progress); tag.putInt("Duration", duration); tag.putInt("Batch", batch);
         tag.putFloat("RequiredRpm", requiredRpm);
+        if (operation != null) tag.put("Operation", operation.save());
     }
     @Override protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean client) {
         super.read(tag, registries, client);
         recipeId = tag.contains("Recipe") ? ResourceLocation.tryParse(tag.getString("Recipe")) : null;
-        fingerprint = tag.getString("Fingerprint"); duration = Math.max(1, tag.getInt("Duration")); progress = Math.clamp(tag.getInt("Progress"), 0, duration); batch = Math.clamp(tag.getInt("Batch"), 1, 4);
+        fingerprint = tag.getString("Fingerprint"); duration = Math.max(1, tag.getInt("Duration")); progress = Math.clamp(tag.getInt("Progress"), 0, duration); batch = recipeId == null ? 0 : 1;
+        operation = recipeId != null && tag.contains("Operation") ? VesselOperation.load(tag.getCompound("Operation")) : null;
         requiredRpm = Float.isFinite(tag.getFloat("RequiredRpm")) ? Math.max(1, tag.getFloat("RequiredRpm")) : 1;
     }
 }

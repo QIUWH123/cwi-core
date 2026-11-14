@@ -1,0 +1,89 @@
+import groovy.json.JsonSlurper
+import java.nio.file.Files
+import java.security.MessageDigest
+
+// Only reviewed files enter the classpath. Local paths and third-party binaries stay private.
+def manifestFile = file('gradle/local-dependencies.json')
+def manifest = new JsonSlurper().parse(manifestFile)
+def artifacts = manifest.artifacts
+if (manifest.format != 1 || !artifacts || artifacts.collect { it.path }.toSet().size() != artifacts.size())
+    throw new GradleException('Dependency manifest must have format 1 and unique artifact paths')
+artifacts.each { entry ->
+    if (!(entry.path ==~ /libs\/(runtime|compile|optional)\/[^\/]+\.jar/)
+            || !(entry.sha256 ==~ /[0-9a-f]{64}/)) throw new GradleException("Invalid dependency manifest entry: ${entry.path}")
+}
+ext.cwiDependencies = { String role -> artifacts.findAll { it.path.startsWith("libs/${role}/") }.collect { file(it.path) } }
+ext.cwiOptionalDependencies = { List<String> patterns ->
+    files(cwiDependencies('optional').findAll { candidate -> patterns.any { pattern ->
+        candidate.name ==~ pattern.split('\\*', -1).collect { java.util.regex.Pattern.quote(it) }.join('.*')
+    } })
+}
+def digest = { File input ->
+    def md = MessageDigest.getInstance('SHA-256')
+    input.withInputStream { stream ->
+        byte[] buffer = new byte[65536]
+        for (int length; (length = stream.read(buffer)) > 0;) md.update(buffer, 0, length)
+    }
+    HexFormat.of().formatHex(md.digest())
+}
+tasks.register('verifyLocalDependencies') {
+    group = 'verification'
+    description = 'Require every pinned local dependency and verify its SHA256.'
+    doLast {
+        def failures = artifacts.findResults { entry ->
+            def jar = file(entry.path)
+            !jar.isFile() ? "Missing ${entry.path}" : digest(jar) != entry.sha256 ? "SHA256 mismatch: ${entry.path}" : null
+        }
+        def pinned = artifacts.collect { file(it.path).canonicalPath }.toSet()
+        ['runtime', 'compile', 'optional'].each { role ->
+            fileTree("libs/${role}") { include '*.jar' }.each { jar ->
+                if (!pinned.contains(jar.canonicalPath)) failures.add("Unpinned dependency: ${jar}")
+            }
+        }
+        if (!failures.isEmpty()) throw new GradleException(failures.join('\n') +
+                '\nRun restoreLocalDependencies -PdependencySource=/path/to/your/private/jars. Existing mismatched files are never overwritten.')
+        logger.lifecycle("Verified ${artifacts.size()} pinned dependency hashes")
+    }
+}
+tasks.register('restoreLocalDependencies') {
+    group = 'build setup'
+    description = 'Restore hash-verified dependencies from a private folder or pinned HTTPS URLs.'
+    doLast {
+        def source = providers.gradleProperty('dependencySource').orNull
+        def candidates = source == null ? [] : fileTree(file(source)) { include '**/*.jar' }.files
+        def missing = []
+        artifacts.each { entry ->
+            File target = file(entry.path)
+            if (target.exists()) {
+                if (!target.isFile() || digest(target) != entry.sha256)
+                    throw new GradleException("Preserving mismatched ${target}. Move it aside explicitly before restoring.")
+                return
+            }
+            File local = candidates.find { it.name == target.name && digest(it) == entry.sha256 }
+            target.parentFile.mkdirs()
+            File temporary = new File(target.parentFile, target.name + '.part-' + UUID.randomUUID())
+            try {
+                if (local != null) Files.copy(local.toPath(), temporary.toPath())
+                else {
+                    String url = entry.urls ? entry.urls[0] : null
+                    if (url == null || gradle.startParameter.offline) { missing.add(entry.path); return }
+                    def uri = new URI(url)
+                    if (uri.scheme != 'https') throw new GradleException("Dependency URL must use HTTPS: ${entry.path}")
+                    def connection = uri.toURL().openConnection()
+                    connection.connectTimeout = 15000
+                    connection.readTimeout = 30000
+                    connection.setRequestProperty('User-Agent', 'CWI-Core-dependency-restore/1.0')
+                    connection.inputStream.withCloseable { input -> Files.copy(input, temporary.toPath()) }
+                }
+                if (digest(temporary) != entry.sha256) throw new GradleException("Rejected dependency hash: ${entry.path}")
+                // No REPLACE_EXISTING: preserve a file created concurrently while this download ran.
+                Files.move(temporary.toPath(), target.toPath())
+                logger.lifecycle("Restored ${entry.path}")
+            } finally { Files.deleteIfExists(temporary.toPath()) }
+        }
+        if (!missing.isEmpty()) throw new GradleException('Supply these exact private JARs with -PdependencySource: \n' + missing.join('\n'))
+    }
+}
+tasks.withType(JavaCompile).configureEach {
+    if (!providers.gradleProperty('offlineTarget').isPresent()) dependsOn 'verifyLocalDependencies'
+}

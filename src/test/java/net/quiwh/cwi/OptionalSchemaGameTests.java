@@ -46,12 +46,10 @@ public final class OptionalSchemaGameTests {
                 "furnace_1", "furnace_2", "incubator_1", "incubator_2", "mixer_1", "mixer_2", "smithing_empty", "smithing_normal"));
         add(paths, "createaddition", "rolling", "charging", "liquid_burning");
         add(paths, "createdieselgenerators", "hammering", "wire_cutting", "diesel_distillation", "basin_fermenting", "bulk_fermenting");
-        add(paths, "tfmg", "coking", "tfmg_distillation", "vat");
+        add(paths, "tfmg", "coking", "tfmg_distillation", "vat", "vat_canonical");
         add(paths, "ratatouille", "threshing", "demolding");
-        add(paths, "lychee", "item_inside", "item_burning", "block_interacting", "dripstone");
         add(paths, "vintageimprovements", "pressurizing", "leaves_vibrating", "auto_upgrade", "auto_smithing");
         add(paths, "createmetallurgy", "entity_melting", "melting", "alloying");
-        add(paths, "petrochem", "pumpjack");
         var encoded = new ArrayList<String>();
         for (String path : paths) {
             var id = ResourceLocation.parse("cwi:test/" + path);
@@ -59,6 +57,16 @@ public final class OptionalSchemaGameTests {
             @SuppressWarnings("unchecked") var serializer = (RecipeSerializer<Recipe<?>>) recipe.getSerializer();
             var ops = level.registryAccess().createSerializationContext(JsonOps.INSTANCE);
             var json = serializer.codec().codec().encodeStart(ops, recipe).getOrThrow();
+            if (path.startsWith("vat_")) {
+                int n = Integer.parseInt(path.substring(path.lastIndexOf('_') + 1));
+                var vat = (com.drmangotea.tfmg.recipes.VatMachineRecipe) recipe;
+                check(net.minecraft.core.registries.BuiltInRegistries.RECIPE_SERIALIZER.getKey(serializer)
+                        .equals(ResourceLocation.parse("tfmg:vat")), "both vat builders use the canonical native serializer: " + id);
+                check(vat.minSize == n && vat.heatLevel == n - 1 && vat.pressure.getValue() == 0
+                        && vat.machines.size() == 1 && vat.machines.getFirst().id().equals(ResourceLocation.parse("tfmg:mixing"))
+                        && vat.allowedVatTypes.size() == 1 && vat.allowedVatTypes.getFirst().type().equals(ResourceLocation.parse("tfmg:steel")),
+                        "both vat builders retain native machine constraints: " + id);
+            }
             var decoded = serializer.codec().codec().parse(ops, json).getOrThrow();
             check(serializer.codec().codec().encodeStart(ops, decoded).getOrThrow().equals(json), "codec roundtrip: " + id
                     + " before=" + json + " after=" + serializer.codec().codec().encodeStart(ops, decoded).getOrThrow());
@@ -82,7 +90,6 @@ public final class OptionalSchemaGameTests {
     }
 
     private static void verifyReplacements(Level level) {
-        var ops = level.registryAccess().createSerializationContext(JsonOps.INSTANCE);
         if (ModList.get().isLoaded("createaddition")) {
             var recipe = (com.simibubi.create.content.processing.recipe.ProcessingRecipe<?, ?>) level.getRecipeManager()
                     .byKey(ResourceLocation.parse("cwi:schema_contracts/rolling_replace")).orElseThrow().value();
@@ -96,20 +103,6 @@ public final class OptionalSchemaGameTests {
                     .byKey(ResourceLocation.parse("cwi:schema_contracts/distillation_replace")).orElseThrow().value();
             check(recipe.getFluidIngredients().getFirst().amount() == 125 && recipe.getFluidIngredients().getFirst().test(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.LAVA, 125)), "fluid input replacement preserves amount");
             check(recipe.getFluidResults().getFirst().is(net.minecraft.world.level.material.Fluids.WATER) && recipe.getFluidResults().getFirst().getAmount() == 75, "fluid output replacement preserves amount");
-        }
-        if (ModList.get().isLoaded("lychee")) {
-            var recipe = level.getRecipeManager().byKey(ResourceLocation.parse("cwi:schema_contracts/lychee_replace")).orElseThrow().value();
-            @SuppressWarnings("unchecked") var serializer = (RecipeSerializer<Recipe<?>>) recipe.getSerializer();
-            var json = serializer.codec().codec().encodeStart(ops, recipe).getOrThrow().getAsJsonObject();
-            var input = json.getAsJsonArray("item_in").get(0).getAsJsonObject();
-            check(input.get("item").getAsString().equals("minecraft:flint") && input.get("count").getAsInt() == 3, "Lychee counted input replacement");
-            var branch = json.getAsJsonArray("post").get(0).getAsJsonObject();
-            var then = branch.getAsJsonArray("then").get(0).getAsJsonObject();
-            var otherwise = branch.getAsJsonArray("else").get(0).getAsJsonObject();
-            check(then.get("id").getAsString().equals("minecraft:iron_nugget") && then.get("count").getAsInt() == 4
-                    && otherwise.get("id").getAsString().equals("minecraft:iron_nugget") && otherwise.get("count").getAsInt() == 2,
-                    "nested Lychee output replacement preserves counts in both branches");
-            check(branch.toString().contains("0.5") && then.toString().contains("0.25"), "Lychee replacement retains native conditions");
         }
     }
 

@@ -1,20 +1,16 @@
 {
   "type": "cwi:incubating",
-  "item_inputs": [
-    {
-      "ingredient": {
-        "item": "minecraft:paper"
-      }
-    }
-  ],
-  "item_outputs": [
-    {
-      "stack": {
-        "id": "minecraft:map",
-        "count": 1
-      }
-    }
-  ],
   "processing_time": 40,
-  "minimum_rpm": 64
+  "minimum_rpm": 64,
+  "ingredients": [
+    {
+      "item": "minecraft:paper"
+    }
+  ],
+  "results": [
+    {
+      "id": "minecraft:map",
+      "count": 1
+    }
+  ]
 }

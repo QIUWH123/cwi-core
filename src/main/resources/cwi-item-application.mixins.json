@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.quiwh.cwi.mixin.application",
+  "compatibilityLevel": "JAVA_21",
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  },
+  "mixins": [
+    "ApplicationRecipeMixin",
+    "ApplicationSerializerMixin",
+    "ManualApplicationMixin",
+    "ApplicationAutomationMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "plugin": "net.quiwh.cwi.mixin.application.ApplicationMixinPlugin",
+  "client": [
+    "ApplicationCategoryMixin"
+  ]
+}

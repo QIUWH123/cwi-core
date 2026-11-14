@@ -4,11 +4,17 @@ license="All Rights Reserved"
 
 [[mods]]
 modId="cwi"
-version="0.1.0-dev+1.21.1"
+version="${mod_version}"
 displayName="CWI Core"
 authors="QUIWH"
 description='''Core gameplay modules for the CWI modpack.'''
 enumExtensions="META-INF/enumextensions.json"
+
+[[mixins]]
+config="cwi-item-application.mixins.json"
+
+[[mixins]]
+config="cwi-processing-jei.mixins.json"
 
 [[mixins]]
 config="cwi-recipe-outputs.mixins.json"
@@ -52,7 +58,7 @@ side="BOTH"
 [[dependencies.cwi]]
 modId="kubejs"
 type="optional"
-versionRange="[2101.7.2-build.377,)"
+versionRange="[2101.7.2-build.377],[2101.7.2-build.381]"
 ordering="AFTER"
 side="BOTH"
 
@@ -66,14 +72,14 @@ side="CLIENT"
 [[dependencies.cwi]]
 modId="kubejs_create"
 type="optional"
-versionRange="[2101.3.1-build.18,)"
+versionRange="[2101.3.1-build.18]"
 ordering="AFTER"
 side="BOTH"
 
 [[dependencies.cwi]]
 modId="tfmg"
 type="optional"
-versionRange="[1.3.2a-community,)"
+versionRange="[1.3.2a-community],[1.3.3a-community],[1.3.3-community]"
 ordering="AFTER"
 side="BOTH"
 
@@ -82,3 +88,77 @@ config="cwi-recipe-values.mixins.json"
 
 [[mixins]]
 config="cwi-interactions.mixins.json"
+
+[[mixins]]
+config="cwi-pack-policy.mixins.json"
+
+[[dependencies.cwi]]
+modId="vintageimprovements"
+type="optional"
+versionRange="[1.21.1-0.0.0.8]"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.cwi]]
+modId="rubberworks"
+type="optional"
+versionRange="[1.1.4]"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.cwi]]
+modId="createaddition"
+type="optional"
+versionRange="[1.6.0],[1.7.2]"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.cwi]]
+modId="createmetallurgy"
+type="optional"
+versionRange="[1.0.3]"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.cwi]]
+modId="sodium"
+type="optional"
+versionRange="[0.8.13+mc1.21.1]"
+ordering="AFTER"
+side="CLIENT"
+
+[[dependencies.cwi]]
+modId="probejs"
+type="optional"
+versionRange="[8.0.3]"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.cwi]]
+modId="powergrid"
+type="optional"
+versionRange="[0.6.2]"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.cwi]]
+modId="create_power_loader"
+type="optional"
+versionRange="[2.0.5-mc1.21.1]"
+ordering="AFTER"
+side="BOTH"
+
+[[mixins]]
+config="cwi-advanced-processing.mixins.json"
+
+[[mixins]]
+config="cwi-protection.mixins.json"
+
+[[mixins]]
+config="cwi-gas-pollution.mixins.json"
+
+[[mixins]]
+config="cwi-weathered.mixins.json"
+
+[[mixins]]
+config="cwi-carriage.mixins.json"

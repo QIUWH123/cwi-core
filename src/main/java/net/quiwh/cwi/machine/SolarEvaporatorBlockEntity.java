@@ -11,6 +11,13 @@ import net.minecraft.network.chat.Component;
 /** Storage tray only. Evaporation recipes were never defined in the original content. */
 public final class SolarEvaporatorBlockEntity extends MachineBlockEntity {
     public SolarEvaporatorBlockEntity(BlockPos pos, BlockState state) { super(MachineBlocks.SOLAR_EVAPORATOR_ENTITY.get(), pos, state, 3, 3000); }
+    @Override protected MultiTank createFluidStorage(int[] capacities) {
+        return new MultiTank(this::changed, capacities, (capacity, callback) ->
+                new net.quiwh.cwi.pollution.GasVentingTank(this, capacity, stack -> callback.run()));
+    }
+    @Override public void initialize() {
+        super.initialize();net.quiwh.cwi.pollution.GasContainers.releaseStored(this);
+    }
     @Override protected void addMachineInfo(List<Component> tooltip) {
         MachineGoggles.line(tooltip, Component.translatable("cwi.machine.storage_only"));
     }
@@ -19,9 +26,11 @@ public final class SolarEvaporatorBlockEntity extends MachineBlockEntity {
         super.tick();
         if (level == null || level.isClientSide || level.getGameTime() % 20 != 0) return;
         AABB tray = new AABB(.12, .12, .12, .88, .5, .88).move(worldPosition);
+        var entities = level.getEntitiesOfClass(ItemEntity.class, tray, ItemEntity::isAlive);
         for (int slot = 0; slot < 3; slot++) {
             int budget = 64;
-            for (ItemEntity entity : level.getEntitiesOfClass(ItemEntity.class, tray, item -> item.isAlive())) {
+            for (ItemEntity entity : entities) {
+                if (!entity.isAlive()) continue;
                 ItemStack stack = entity.getItem();
                 int offered = Math.min(budget, stack.getCount());
                 ItemStack remainder = inventory.insertItem(slot, stack.copyWithCount(offered), false);

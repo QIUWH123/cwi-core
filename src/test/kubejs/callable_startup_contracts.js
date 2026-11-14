@@ -29,7 +29,7 @@ for (const n of [-1, 1.1, NaN, Infinity, '0.5']) callableReject('chance ' + n, (
 for (const n of [0, -1, NaN, Infinity, '1']) callableReject('weight ' + n, () => callableStartupItem.withWeight(n))
 callableReject('chance then weight', () => callableStartupItem.withChance(1).withWeight(1))
 callableReject('weight then chance', () => callableStartupItem.withWeight(1).withChance(1))
-callableReject('timing boolean', () => callableStartupItem.perTick(1))
+callableReject('timing integer', () => callableStartupItem.perTick(1.5))
 for (const value of [callableStartupItem.withChance(1), callableStartupItem.withWeight(1), callableStartupItem.perTick(false)])
   callableReject('explicit metadata to stack', () => value.toStack())
 let callableFresh = callableStartupItem.toStack()

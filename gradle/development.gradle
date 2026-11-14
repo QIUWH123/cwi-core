@@ -1,0 +1,85 @@
+import groovy.json.JsonSlurper
+
+// Local pack sync and isolated script/resource staging. Production packs are read only.
+// Optional local development-pack setup; private instance paths stay outside source control.
+def localDevPack = file('tools/dev-pack.gradle')
+if (localDevPack.isFile()) {
+    apply from: localDevPack
+}
+
+def serverExamples = files(
+        'examples/kubejs/server_scripts/Test.js',
+        'examples/kubejs/server_scripts/native_machine_examples.js',
+        'examples/kubejs/server_scripts/mixing_vessel_tests.js',
+        'examples/kubejs/server_scripts/blast_furnace_advanced.js',
+        'examples/kubejs/server_scripts/native_advanced_processing.js',
+        'examples/kubejs/server_scripts/equipment_upgrade_examples.js',
+        'examples/kubejs/server_scripts/hazard_protection.js',
+        'examples/kubejs/server_scripts/rolling_assembly_example.js')
+
+// Exercise the documented KubeJS builders in the isolated machine-test instance.
+tasks.register('prepareMachineGameTestScripts', Sync) {
+    from(serverExamples)
+    from('src/test/kubejs/hammer_recipe_contracts.js')
+    from('src/test/kubejs/machine_recipe_contracts.js')
+    from('src/test/kubejs/world_interaction_contracts.js')
+    from('src/test/kubejs/callable_recipe_contracts.js')
+    from('src/test/kubejs/addon_schema_contracts.js')
+    from('src/test/kubejs/manual_application_contracts.js')
+    from('src/test/kubejs/equipment_upgrade_contracts.js')
+    from('src/test/kubejs/equipment_upgrade_adapter_contracts.js')
+    if ((fullVerification || providers.gradleProperty('interactionPackVerification').isPresent())) {
+        from('src/test/kubejs/pack/server_scripts/WorldRules.js')
+        from('src/test/kubejs/pack/server_scripts/world_pack_tags.js')
+    }
+    into('build/native-machine-test-run/kubejs/server_scripts')
+}
+tasks.register('prepareHammerGameTestScript', Sync) {
+    from('examples/kubejs/startup_scripts/hammer_builder_example.js')
+    from('src/test/kubejs/hammer_impact_contracts.js')
+    from('src/test/kubejs/hammer_model_contracts.js')
+    from('src/test/kubejs/hammer_pack_tiers.js')
+    from('src/test/kubejs/registration_blocking_contracts.js')
+    from('src/test/kubejs/shadowdrop_contracts.js')
+    from('src/test/kubejs/callable_startup_contracts.js')
+    from('src/test/kubejs/world_interaction_startup.js')
+    from('src/test/kubejs/gas_pollution_fluids.js')
+    from('src/test/kubejs/pack/startup_scripts/GasProfiles.js')
+    from('examples/pack-hammer-models.js')
+    if ((fullVerification || providers.gradleProperty('interactionPackVerification').isPresent())) {
+        from('src/test/kubejs/pack/startup_scripts/world_pack_registry.js')
+        from('src/test/kubejs/pack/startup_scripts/RandomTickBlocks.js')
+    }
+    into('build/native-machine-test-run/kubejs/startup_scripts')
+}
+if (!providers.gradleProperty('offlineTarget').isPresent()) {
+    tasks.register('prepareMachineClientScripts', Copy) {
+        from(serverExamples)
+        into('build/native-machine-client-run/kubejs/server_scripts')
+    }
+    tasks.register('prepareHammerClientScript', Copy) {
+        from('examples/kubejs/startup_scripts/hammer_builder_example.js')
+        into('build/native-machine-client-run/kubejs/startup_scripts')
+    }
+    tasks.register('pruneMachineClientAssets', Exec) {
+        onlyIf { file('tools/prune_machine_client_assets.py').isFile() }
+        commandLine 'python3', 'tools/prune_machine_client_assets.py'
+    }
+    tasks.register('prepareMachineClientAssets', Copy) {
+        dependsOn 'pruneMachineClientAssets'
+        from('pack/core-assets/kubejs/assets')
+        if (providers.gradleProperty('clientAssets').isPresent()) from(file(providers.gradleProperty('clientAssets').get()))
+        def packConfig = file('tools/dev-pack.json')
+        if (packConfig.isFile()) {
+            def packSource = new JsonSlurper().parse(packConfig).source
+            from(file("${packSource}/kubejs/assets/kubejs")) {
+                include 'textures/**'
+                into 'kubejs'
+            }
+        }
+        into('build/native-machine-client-run/kubejs/assets')
+    }
+    tasks.named('runMachineClient') {
+        dependsOn 'prepareMachineClientScripts', 'prepareHammerClientScript', 'prepareMachineClientAssets'
+    }
+}

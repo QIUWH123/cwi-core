@@ -51,6 +51,9 @@ final class OutputAllocation {
         return allocate(required, capacities, null);
     }
     static int[][] allocate(long[] required, int[][] capacities, Predicate<int[][]> acceptable) {
+        return allocate(required, capacities, null, acceptable);
+    }
+    static int[][] allocate(long[] required, int[][] capacities, boolean[] mergeDestinations, Predicate<int[][]> acceptable) {
         int slots = capacities.length == 0 ? 0 : capacities[0].length;
         List<Integer> groups = new ArrayList<>();
         for (int product = 0; product < required.length; product++) {
@@ -61,7 +64,7 @@ final class OutputAllocation {
         // Products with fewer destinations go first. This is only search ordering; every feasible assignment is considered.
         groups.sort(Comparator.comparingLong((Integer p) -> Arrays.stream(capacities[p]).filter(c -> c > 0).count())
                 .thenComparing(Comparator.comparingLong((Integer p) -> required[p]).reversed()));
-        var search = new Search(required, capacities, groups, slots, acceptable);
+        var search = new Search(required, capacities, groups, slots, mergeDestinations, acceptable);
         return search.assign(0) ? search.result : null;
     }
 
@@ -72,14 +75,16 @@ final class OutputAllocation {
         private final BitSet occupied;
         private final Set<State> failed = new HashSet<>();
         private final Predicate<int[][]> acceptable;
+        private final boolean[] mergeDestinations;
 
-        Search(long[] required, int[][] capacities, List<Integer> groups, int slots, Predicate<int[][]> acceptable) {
+        Search(long[] required, int[][] capacities, List<Integer> groups, int slots, boolean[] mergeDestinations, Predicate<int[][]> acceptable) {
             this.required = required;
             this.capacities = capacities;
             this.groups = groups;
             occupied = new BitSet(slots);
             result = new int[required.length][slots];
             this.acceptable = acceptable;
+            this.mergeDestinations = mergeDestinations;
         }
 
         private boolean assign(int index) {
@@ -111,7 +116,10 @@ final class OutputAllocation {
             List<Integer> candidates = new ArrayList<>();
             for (int slot = 0; slot < capacities[product].length; slot++)
                 if (!occupied.get(slot) && capacities[product][slot] > 0) candidates.add(slot);
-            candidates.sort(Comparator.comparingInt((Integer slot) -> capacities[product][slot]).reversed());
+            // Preserve empty destinations for new products. This changes search order only;
+            // constrained storage/future-consumption checks may still choose another plan.
+            candidates.sort(Comparator.comparing((Integer slot) -> mergeDestinations == null || !mergeDestinations[slot])
+                    .thenComparing(Comparator.comparingInt((Integer slot) -> capacities[product][slot]).reversed()));
             if (choose(index, product, candidates, 0, required[product])) return true;
             failed.add(state);
             return false;

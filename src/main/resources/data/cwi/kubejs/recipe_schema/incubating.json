@@ -1,31 +1,32 @@
 {
   "keys": [
     {
-      "name": "item_outputs",
+      "name": "results",
       "role": "output",
       "type": {
         "type": "list",
         "component": "cwi:machine_item_output",
         "min": 0,
-        "max": 64
+        "max": 128
       },
       "optional": [],
       "function_names": [
-        "itemOutputs"
+        "results"
       ]
     },
     {
-      "name": "item_inputs",
+      "name": "ingredients",
       "role": "input",
       "type": {
         "type": "list",
         "component": "cwi:machine_item_input",
         "min": 0,
-        "max": 64
+        "max": 128,
+        "spread": "cwi:machine_item_input"
       },
       "optional": [],
       "function_names": [
-        "itemInputs"
+        "ingredients"
       ]
     },
     {
@@ -48,11 +49,23 @@
       "name": "incubation_display",
       "type": "cwi:incubation_display",
       "default_optional": true,
-      "function_names": ["incubationDisplay"]
+      "function_names": [
+        "incubationDisplay"
+      ]
     }
   ],
-  "constructors": [{"keys": []}],
+  "constructors": [
+    {
+      "keys": []
+    },
+    {
+      "keys": [
+        "results",
+        "ingredients"
+      ]
+    }
+  ],
   "unique": [
-    "item_outputs"
+    "results"
   ]
 }

@@ -1,0 +1,34 @@
+import java.security.MessageDigest
+
+// A release can be identified even when built from uncommitted work or a source archive.
+def revision = providers.gradleProperty('sourceRevision').orElse(providers.provider {
+    try {
+        def result = providers.exec { commandLine 'git', 'rev-parse', 'HEAD'; ignoreExitValue = true }
+        def value = result.standardOutput.asText.get().trim()
+        value ==~ /[0-9a-f]{40}/ ? value : 'unknown'
+    } catch (Exception ignored) { 'unknown' }
+})
+def sourceInputs = files('build.gradle', 'settings.gradle', 'gradle.properties',
+        fileTree('gradle') { include '*.gradle', '*.json' },
+        fileTree('src/main') { exclude '**/.DS_Store' })
+def generated = layout.buildDirectory.dir('generated/cwiBuildMetadata')
+tasks.register('generateBuildInfo') {
+    inputs.files(sourceInputs).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.property('version', project.version.toString())
+    inputs.property('revision', revision)
+    outputs.dir(generated)
+    doLast {
+        def digest = MessageDigest.getInstance('SHA-256')
+        sourceInputs.files.sort { project.relativePath(it) }.each { source ->
+            digest.update(project.relativePath(source).getBytes('UTF-8'))
+            digest.update((byte)0)
+            digest.update(source.bytes)
+            digest.update((byte)0)
+        }
+        def output = generated.get().file('META-INF/cwi-build.properties').asFile
+        output.parentFile.mkdirs()
+        output.text = "version=${project.version}\nminecraft=${minecraft_version}\nneoforge=${neoforge_version}\nrevision=${revision.get()}\nsource_sha256=${HexFormat.of().formatHex(digest.digest())}\n"
+    }
+}
+sourceSets.main.resources.srcDir(generated)
+tasks.named('processResources') { dependsOn 'generateBuildInfo' }

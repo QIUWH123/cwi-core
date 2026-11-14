@@ -44,7 +44,7 @@ public final class CallableRecipeGameTests {
     public static void createNativePayloadsKeepPositionsCountsAndWeights(GameTestHelper helper) {
         if (!net.neoforged.fml.ModList.get().isLoaded("kubejs_create")) { helper.succeed(); return; }
         var mixing = processing(helper, "create_mixing");
-        check(mixing.getIngredients().size() == 2 && mixing.getFluidIngredients().getFirst().amount() == 100, "bounded ingredient spreading and fluid tag amount");
+        check(net.quiwh.cwi.compat.processing.AdvancedProcessing.get(mixing).ingredients().stream().mapToInt(e -> e.map(v -> 0, v -> v.count())).sum() == 2 && mixing.getFluidIngredients().getFirst().amount() == 100, "counted native ingredients and fluid tag amount");
         check(mixing.getRollableResults().getFirst().getStack().getCount() == 2 && mixing.getRollableResults().getFirst().getChance() == .25F, "native Create item roll");
         check(mixing.getFluidResults().getFirst().getAmount() == 50, "deterministic fluid result");
         check(processing(helper, "create_filling").getFluidIngredients().getFirst().amount() == 25, "filling native ingredient");
@@ -55,11 +55,28 @@ public final class CallableRecipeGameTests {
         var assembly = (com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipe)recipe(helper, "create_assembly");
         check(assembly.resultPool.size() == 2 && assembly.resultPool.get(0).getChance() == 2 && assembly.resultPool.get(1).getChance() == .25F, "ordered assembly weights");
         check(assembly.getLoops() == 2 && assembly.getSequence().size() == 3 && assembly.getTransitionalItem().getCount() == 1, "transitional and nested fields");
+        verifyAssemblyVisibility(helper);
         var replacement = processing(helper, "replace_pressing").getRollableResults().getFirst();
         check(replacement.getStack().getCount() == 2 && replacement.getChance() == 1, "Create complete output replacement");
         var assemblyReplacement = (com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipe)recipe(helper, "replace_assembly");
         check(assemblyReplacement.resultPool.getFirst().getStack().getCount() == 2 && assemblyReplacement.resultPool.getFirst().getChance() == 1, "assembly replacement defaults weight to one");
         helper.succeed();
+    }
+    static void verifyAssemblyVisibility(GameTestHelper helper) {
+        for (String id : new String[]{"create_assembly", "assembly_hidden", "assembly_default"}) {
+            var assembly = (com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipe) recipe(helper, id);
+            boolean expected = id.equals("create_assembly");
+            check(((net.quiwh.cwi.compat.AssemblyOutputVisibility) assembly).cwi$showOutputs() == expected, "per-recipe assembly visibility " + id);
+            var serializer = new com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipeSerializer();
+            var registry = helper.getLevel().registryAccess();
+            var buffer = new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(), registry);
+            try {
+                serializer.streamCodec().encode(buffer, assembly);
+                var copy = serializer.streamCodec().decode(buffer);
+                check(((net.quiwh.cwi.compat.AssemblyOutputVisibility) copy).cwi$showOutputs() == expected, "assembly client synchronization " + id);
+                check(buffer.readableBytes() == 0, "assembly complete network payload");
+            } finally { buffer.release(); }
+        }
     }
     @GameTest(template = "empty", templateNamespace = "cwi")
     public static void descriptorRecipesExecuteNativeChanceTimingAndNetwork(GameTestHelper helper) {

@@ -51,6 +51,10 @@
     "cwi:lava_extractor_pump",
     "cwi:lava_extractor_stress_input",
     "cwi:lava_extractor_pump_blade",
-    "cwi:solar_evaporator"
+    "cwi:solar_evaporator",
+    "cwi:weathered_metal_girder",
+    "cwi:weathered_metal_girder_encased_shaft",
+    "cwi:weathered_metal_bracket",
+    "cwi:chain_conveyor_carriage"
   ]
 }

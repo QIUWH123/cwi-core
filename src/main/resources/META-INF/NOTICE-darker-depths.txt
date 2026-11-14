@@ -1,0 +1,9 @@
+The petrified wood and amber resource definitions in CWI Core are adapted from
+Darker Depths 2.1.6 for Minecraft 1.21.1.
+
+Upstream authors: Naterbobber, Blackgear, Toxteer and Orcinus.
+Upstream mod metadata declares its license as "Creative Commons" without
+specifying a variant. This notice preserves that declaration and attribution;
+it does not replace or relicense the upstream material.
+
+Custom texture PNGs are supplied by the modpack and are not included in this JAR.

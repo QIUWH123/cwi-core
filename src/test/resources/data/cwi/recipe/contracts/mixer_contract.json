@@ -1,28 +1,23 @@
 {
   "type": "cwi:mixing_vessel_mixing",
-  "item_inputs": [
+  "processing_time": 20,
+  "ingredients": [
     {
-      "ingredient": {
-        "item": "minecraft:iron_ingot"
-      },
-      "count": 2
-    }
-  ],
-  "fluid_inputs": [
+      "item": "minecraft:iron_ingot"
+    },
     {
-      "ingredient": {
-        "fluid": "minecraft:water"
-      },
+      "item": "minecraft:iron_ingot"
+    },
+    {
+      "type": "neoforge:single",
+      "fluid": "minecraft:water",
       "amount": 100
     }
   ],
-  "item_outputs": [
+  "results": [
     {
-      "stack": {
-        "id": "minecraft:gold_ingot",
-        "count": 1
-      }
+      "id": "minecraft:gold_ingot",
+      "count": 1
     }
-  ],
-  "processing_time": 20
+  ]
 }

@@ -20,7 +20,10 @@ public final class OutputAllocationContractTest {
                 required[product] = random.nextInt(10);
                 for (int slot = 0; slot < slots; slot++) capacities[product][slot] = random.nextInt(5);
             }
-            int[][] plan = OutputAllocation.allocate(required, capacities);
+            boolean[] preferred = new boolean[slots];
+            for(int slot=0;slot<slots;slot++)preferred[slot]=random.nextBoolean();
+            int[][] plan = trial % 2 == 0 ? OutputAllocation.allocate(required, capacities)
+                    : OutputAllocation.allocate(required, capacities, preferred, null);
             boolean expected = bruteForce(required, capacities, 0, new long[products]);
             if ((plan != null) != expected) throw new AssertionError("Oracle mismatch " + Arrays.toString(required) + Arrays.deepToString(capacities));
             if (plan == null) continue;
@@ -35,6 +38,10 @@ public final class OutputAllocationContractTest {
             for (int product = 0; product < products; product++)
                 if (Arrays.stream(plan[product]).asLongStream().sum() != required[product]) throw new AssertionError("Incorrect product amount");
         }
+        var merged=OutputAllocation.allocate(new long[]{2},new int[][]{{2,64}},new boolean[]{true,false},null);
+        if(merged==null || merged[0][0]!=2 || merged[0][1]!=0)throw new AssertionError("Existing stack/tank was bypassed for an empty destination");
+        var fallback=OutputAllocation.allocate(new long[]{2},new int[][]{{2,64}},new boolean[]{true,false},p->p[0][0]==0);
+        if(fallback==null || fallback[0][1]!=2)throw new AssertionError("Merge preference bypassed a future-state constraint");
         long[] required = new long[16]; Arrays.fill(required, 1);
         int[][] capacities = new int[16][16]; for (int[] row : capacities) Arrays.fill(row, 64);
         if (OutputAllocation.allocate(required, capacities) == null) throw new AssertionError("Uniform 16-product layout refused");

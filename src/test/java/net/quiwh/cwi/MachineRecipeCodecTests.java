@@ -31,20 +31,21 @@ public final class MachineRecipeCodecTests {
     public static void verifyRoundTrip(RegistryAccess registries) {
         for (var entry : MachineRecipes.entries()) {
             String json = entry == MachineRecipes.MIXING ? """
-                    {"item_inputs":[{"ingredient":{"item":"minecraft:iron_ingot"},"count":3,"chance":0.25,"per_tick":true}],
-                     "fluid_inputs":[{"ingredient":{"fluid":"minecraft:water"},"amount":250,"chance":0,"per_tick":false}],
-                     "item_outputs":[{"stack":{"id":"minecraft:gold_ingot","count":2},"chance":0,"per_tick":false}],
-                     "fluid_outputs":[{"stack":{"id":"minecraft:lava","amount":500},"chance":0.75,"per_tick":true}],
-                     "processing_time":123,"minimum_rpm":64}
+                    {"processing_time":123,
+                     "minimum_rpm":64,
+                     "ingredients":[{"ingredient":{"item":"minecraft:iron_ingot"},"count":3,"chance":0.25,"per_tick":true},{"ingredient":{"fluid":"minecraft:water"},"amount":250,"chance":0,"per_tick":false}],
+                     "results":[{"stack":{"id":"minecraft:gold_ingot","count":2},"chance":0,"per_tick":false},{"stack":{"id":"minecraft:lava","amount":500},"chance":0.75,"per_tick":true}]}
                     """ : entry == MachineRecipes.BLAST_FURNACE ? """
-                    {"item_inputs":[{"ingredient":{"item":"minecraft:iron_ingot"},"count":3,"chance":0.25,"per_tick":true}],
-                     "fluid_inputs":[{"ingredient":{"fluid":"minecraft:water"},"amount":250,"chance":0}],
-                     "fluid_outputs":[{"stack":{"id":"minecraft:lava","amount":500},"chance":0.75,"per_tick":true}],
-                     "processing_time":123,"minimum_heat":1200,"heat_requirement":"heated"}
+                    {"processing_time":123,
+                     "minimum_heat":1200,
+                     "heat_requirement":"heated",
+                     "ingredients":[{"ingredient":{"item":"minecraft:iron_ingot"},"count":3,"chance":0.25,"per_tick":true},{"ingredient":{"fluid":"minecraft:water"},"amount":250,"chance":0}],
+                     "results":[{"stack":{"id":"minecraft:lava","amount":500},"chance":0.75,"per_tick":true}]}
                     """ : """
-                    {"item_inputs":[{"ingredient":{"item":"minecraft:paper"},"chance":0.25}],
-                     "item_outputs":[{"stack":{"id":"minecraft:map"},"chance":0}],
-                     "processing_time":123,"minimum_rpm":64}
+                    {"processing_time":123,
+                     "minimum_rpm":64,
+                     "ingredients":[{"ingredient":{"item":"minecraft:paper"},"chance":0.25}],
+                     "results":[{"stack":{"id":"minecraft:map"},"chance":0}]}
                     """;
             var recipe = decode(entry, registries, json);
             check(recipe.itemInputs().getFirst().count() == (entry == MachineRecipes.INCUBATING ? 1 : 3), "count lost");
@@ -53,8 +54,8 @@ public final class MachineRecipeCodecTests {
                 check(recipe.fluidInputs().getFirst().chance() == 0, "zero input chance lost");
             }
             if (entry != MachineRecipes.BLAST_FURNACE) check(recipe.itemOutputs().getFirst().chance() == 0, "zero output chance lost");
-            check(recipe.durationAtRpm(128) == 246, "RPM duration scaling");
-            check(recipe.durationAtRpm(-128) == 246, "negative RPM uses magnitude");
+            check(recipe.durationAtRpm(128) == 39, "RPM duration scaling");
+            check(recipe.durationAtRpm(-128) == 39, "negative RPM uses magnitude");
             check(recipe.durationAtRpm(0) == Integer.MAX_VALUE, "zero RPM cannot finish");
             check(recipe.durationAtRpm(Float.NaN) == Integer.MAX_VALUE, "NaN RPM cannot finish");
             var buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), registries);
@@ -66,18 +67,21 @@ public final class MachineRecipeCodecTests {
             } finally { buffer.release(); }
         }
         var recipe = decode(MachineRecipes.MIXING, registries, """
-                {"item_inputs":[{"ingredient":{"item":"minecraft:iron_ingot"},"count":2}],
-                 "item_outputs":[{"stack":{"id":"minecraft:gold_ingot"},"chance":0.25}],"processing_time":40}
-                """);
+                    {"processing_time":40,
+                     "ingredients":[{"ingredient":{"item":"minecraft:iron_ingot"},"count":2}],
+                     "results":[{"stack":{"id":"minecraft:gold_ingot"},"chance":0.25}]}
+                    """);
         var same = decode(MachineRecipes.MIXING, registries, """
-                {"processing_time":40,"item_outputs":[{"chance":0.25,"stack":{"id":"minecraft:gold_ingot"}}],
-                 "item_inputs":[{"count":2,"ingredient":{"item":"minecraft:iron_ingot"}}]}
-                """);
+                    {"processing_time":40,
+                     "ingredients":[{"count":2,"ingredient":{"item":"minecraft:iron_ingot"}}],
+                     "results":[{"chance":0.25,"stack":{"id":"minecraft:gold_ingot"}}]}
+                    """);
         check(recipe.fingerprint(registries).equals(same.fingerprint(registries)), "JSON key order changes progress identity");
         var changed = decode(MachineRecipes.MIXING, registries, """
-                {"item_inputs":[{"ingredient":{"item":"minecraft:iron_ingot"},"count":3}],
-                 "item_outputs":[{"stack":{"id":"minecraft:gold_ingot"},"chance":0.25}],"processing_time":40}
-                """);
+                    {"processing_time":40,
+                     "ingredients":[{"ingredient":{"item":"minecraft:iron_ingot"},"count":3}],
+                     "results":[{"stack":{"id":"minecraft:gold_ingot"},"chance":0.25}]}
+                    """);
         check(!recipe.fingerprint(registries).equals(changed.fingerprint(registries)), "recipe mutation does not reset progress identity");
         var exposed = recipe.itemOutputs().getFirst().stack(); exposed.setCount(99);
         check(recipe.itemOutputs().getFirst().stack().getCount() == 1, "output accessor mutates native recipe");
@@ -94,12 +98,10 @@ public final class MachineRecipeCodecTests {
         check(!overlap.matches(new MachineRecipe.Input(java.util.List.of(new ItemStack(Items.IRON_INGOT), new ItemStack(Items.GOLD_INGOT)),
                 java.util.List.of(new FluidStack(Fluids.WATER, 99), new FluidStack(Fluids.LAVA, 100))), null), "missing one mB catalyst fluid");
         var displayRecipe = decode(MachineRecipes.INCUBATING, registries, """
-                {"item_inputs":[{"ingredient":{"item":"minecraft:paper"}}],
-                 "item_outputs":[{"stack":{"id":"minecraft:map"}}],
-                 "incubation_display":{"microbe":{"id":"minecraft:slime_ball"},"yield_count":3,
-                   "steps":[{"type":"deploying","item":{"id":"minecraft:sugar"},"count":2},
-                            {"type":"filling","fluid":{"id":"minecraft:water","amount":250},"count":2}]}}
-                """);
+                    {"incubation_display":{"microbe":{"id":"minecraft:slime_ball"},"yield_count":3,"steps":[{"type":"deploying","item":{"id":"minecraft:sugar"},"count":2},{"type":"filling","fluid":{"id":"minecraft:water","amount":250},"count":2}]},
+                     "ingredients":[{"ingredient":{"item":"minecraft:paper"}}],
+                     "results":[{"stack":{"id":"minecraft:map"}}]}
+                    """);
         var displayJson = MachineRecipes.INCUBATING.serializer().codec().codec().encodeStart(
                 registries.createSerializationContext(com.mojang.serialization.JsonOps.INSTANCE), displayRecipe).getOrThrow();
         check(displayJson.getAsJsonObject().has("incubation_display"), "incubator preparation display lost by native codec");
@@ -133,7 +135,7 @@ public final class MachineRecipeCodecTests {
 
     public static void verifyMalformed(RegistryAccess registries) {
         var entry = MachineRecipes.MIXING;
-        var base = "{\"item_inputs\":[{\"ingredient\":{\"item\":\"minecraft:iron_ingot\"},\"count\":1}],\"processing_time\":20}";
+        var base = "{\"ingredients\":[{\"ingredient\":{\"item\":\"minecraft:iron_ingot\"},\"count\":1}],\"processing_time\":20}";
         for (var changed : new String[]{base.replace("\"count\":1", "\"count\":0"),
                 base.replace("\"count\":1", "\"count\":-1"),
                 base.replace("\"count\":1", "\"chance\":-0.1"),
@@ -144,22 +146,22 @@ public final class MachineRecipeCodecTests {
             check(entry.serializer().codec().codec().parse(registries.createSerializationContext(com.mojang.serialization.JsonOps.INSTANCE),
                     JsonParser.parseString(changed)).isError(), "malformed recipe accepted: " + changed);
         }
+        reject(entry, registries, "{\"ingredients\":[{\"item\":\"minecraft:paper\"}],\"results\":[{\"id\":\"minecraft:map\",\"chance\":1.5}]}");
+        reject(entry, registries, base.replace("\"count\":1", "\"count\":2147483647"));
         for (var type : MachineRecipes.entries()) {
-            String plate = "{\"item_inputs\":[{\"ingredient\":{\"item\":\"minecraft:paper\"}}]";
+            String plate = "{\"ingredients\":[{\"ingredient\":{\"item\":\"minecraft:paper\"}}]";
             if (type == MachineRecipes.BLAST_FURNACE) {
                 reject(type, registries, plate + ",\"minimum_rpm\":1}");
-                reject(type, registries, plate + ",\"item_outputs\":[{\"stack\":{\"id\":\"minecraft:map\"}}]}");
             } else {
                 reject(type, registries, plate + ",\"minimum_heat\":1}");
                 reject(type, registries, plate + ",\"heat_requirement\":\"heated\"}");
             }
         }
-        for (String extra : new String[]{",\"fluid_inputs\":[{\"ingredient\":{\"fluid\":\"minecraft:water\"},\"amount\":1}]",
-                ",\"fluid_outputs\":[{\"stack\":{\"id\":\"minecraft:water\",\"amount\":1}}]"})
-            reject(MachineRecipes.INCUBATING, registries, "{\"item_inputs\":[{\"ingredient\":{\"item\":\"minecraft:paper\"}}]" + extra + "}");
+        reject(MachineRecipes.INCUBATING, registries, "{\"ingredients\":[{\"item\":\"minecraft:paper\"},{\"type\":\"neoforge:single\",\"fluid\":\"minecraft:water\",\"amount\":1}]}");
+        reject(MachineRecipes.INCUBATING, registries, "{\"ingredients\":[{\"item\":\"minecraft:paper\"}],\"results\":[{\"id\":\"minecraft:water\",\"amount\":1}]}");
         reject(MachineRecipes.INCUBATING, registries, base.replace("\"count\":1", "\"count\":2"));
         reject(MachineRecipes.INCUBATING, registries, base.replace("\"count\":1", "\"per_tick\":true"));
-        String plate = "{\"item_inputs\":[{\"ingredient\":{\"item\":\"minecraft:paper\"}}],\"incubation_display\":";
+        String plate = "{\"ingredients\":[{\"ingredient\":{\"item\":\"minecraft:paper\"}}],\"incubation_display\":";
         String display = "{\"microbe\":{\"id\":\"minecraft:slime_ball\"},\"yield_count\":3,\"steps\":[{\"type\":\"filling\",\"fluid\":{\"id\":\"minecraft:water\",\"amount\":250},\"count\":2}]}";
         reject(MachineRecipes.MIXING, registries, plate + display + "}");
         reject(MachineRecipes.BLAST_FURNACE, registries, plate + display + "}");

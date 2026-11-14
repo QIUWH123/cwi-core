@@ -33,16 +33,22 @@ public final class CwiCore {
         CwiBlocks.register(modBus);
         net.quiwh.cwi.block.PetrifiedWood.register(modBus);
         net.quiwh.cwi.block.BuddingBlocks.register(modBus);
+        net.quiwh.cwi.content.weathered.WeatheredContent.register(modBus);
+        net.quiwh.cwi.content.carriage.CarriageContent.register(modBus);
         net.quiwh.cwi.compat.TfmgSlagVariants.register(modBus);
         FanRecipes.register(modBus);
         HammerRecipes.register(modBus);
         net.quiwh.cwi.interaction.InteractionRecipes.register(modBus);
         net.quiwh.cwi.interaction.WorldInteractions.register();
         net.quiwh.cwi.equipment.EquipmentUpgrades.register(modBus);
+        net.quiwh.cwi.equipment.protection.ProtectiveEnchantments.register();
         net.quiwh.cwi.machine.MachineBlocks.register(modBus);
         net.quiwh.cwi.machine.MachineEffects.register(modBus);
         net.quiwh.cwi.machine.FurnaceMaterials.register(modBus);
         net.quiwh.cwi.machine.recipe.MachineRecipes.register(modBus);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+                (net.neoforged.neoforge.event.TagsUpdatedEvent event) -> net.quiwh.cwi.machine.MachineRecipeIndex.invalidate());
+        net.quiwh.cwi.pollution.GasPollution.register(modBus);
         FAN_TYPES.register(modBus);
         REGISTRATE.registerEventListeners(modBus);
     }
