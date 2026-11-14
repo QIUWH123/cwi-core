@@ -45,6 +45,10 @@ idea {
 }
 
 tasks.named('jar') {
+    from('LICENSE') {
+        into 'META-INF'
+        rename 'LICENSE', 'LICENSE-cwi-core.txt'
+    }
     // Definitions and sounds ship in Core; editable custom textures stay in KubeJS.
     exclude 'assets/**/textures/**'
     manifest.attributes('Implementation-Title': mod_name, 'Implementation-Version': project.version.toString(),

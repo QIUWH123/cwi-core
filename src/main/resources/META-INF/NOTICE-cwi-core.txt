@@ -1,0 +1,8 @@
+CWI Core original code is licensed under the GNU General Public License,
+version 3 only (SPDX-License-Identifier: GPL-3.0-only).
+The complete license text is included in LICENSE-cwi-core.txt.
+
+This grant applies to original CWI Core code. Third-party code, resource
+definitions and audio retain their own terms and attribution in the accompanying
+LICENSE-* and NOTICE-* files. It does not relicense upstream material or the
+modpack's separately supplied textures.

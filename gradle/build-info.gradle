@@ -8,7 +8,7 @@ def revision = providers.gradleProperty('sourceRevision').orElse(providers.provi
         value ==~ /[0-9a-f]{40}/ ? value : 'unknown'
     } catch (Exception ignored) { 'unknown' }
 })
-def sourceInputs = files('build.gradle', 'settings.gradle', 'gradle.properties',
+def sourceInputs = files('LICENSE', 'build.gradle', 'settings.gradle', 'gradle.properties',
         fileTree('gradle') { include '*.gradle', '*.json' },
         fileTree('src/main') { exclude '**/.DS_Store' })
 def generated = layout.buildDirectory.dir('generated/cwiBuildMetadata')
