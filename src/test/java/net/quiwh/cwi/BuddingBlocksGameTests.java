@@ -22,10 +22,10 @@ import java.util.List;
 @PrefixGameTestTemplate(false)
 public final class BuddingBlocksGameTests {
     private static final List<ResourceLocation> QUARTZ_STAGES = List.of(
-            id("geode_plus:small_nether_quartz_bud"),
-            id("geode_plus:medium_nether_quartz_bud"),
-            id("geode_plus:large_nether_quartz_bud"),
-            id("geode_plus:nether_quartz_crystal"));
+            id("cwi:small_quartz_bud"),
+            id("cwi:medium_quartz_bud"),
+            id("cwi:large_quartz_bud"),
+            id("cwi:quartz_crystal"));
 
     @GameTest(template = "empty", templateNamespace = CwiCore.ID)
     public static void infectedBlocksAreRegisteredAndGrowAmethyst(GameTestHelper helper) {

@@ -51,6 +51,11 @@ public final class CwiCore {
         net.quiwh.cwi.pollution.GasPollution.register(modBus);
         FAN_TYPES.register(modBus);
         REGISTRATE.registerEventListeners(modBus);
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent event) -> {
+            if (net.neoforged.fml.ModList.get().isLoaded("kubejs")) {
+                event.enqueueWork(net.quiwh.cwi.compat.crystal.BuddingBlockBuilder::validateAll);
+            }
+        });
     }
 
     public static ResourceLocation loadResource(String path) {

@@ -23,6 +23,8 @@ public final class CwiRecipeValuesProbeJS extends ProbeJSPlugin {
     @Override public Set<Class<?>> provideClassForDiscovery() {
         return Set.of(net.quiwh.cwi.pollution.GasProfile.Builder.class, net.quiwh.cwi.pollution.GasProfile.RouteBuilder.class,
                 GasConfigurationEvent.class, dev.latvian.mods.kubejs.fluid.FluidBuilder.class, ItemRecipeValue.class, FluidRecipeValue.class, ItemWrapper.class, FluidWrapper.class,
+                net.quiwh.cwi.compat.crystal.BuddingBlockBuilder.class,
+                net.quiwh.cwi.compat.crystal.CrystalClusterBlockBuilder.class,
                 ItemStack.class, Ingredient.class, SizedIngredient.class, FluidStack.class, FluidIngredient.class, SizedFluidIngredient.class);
     }
     @Override public void transformClass(moe.wolfgirl.probejs.typescript.Documents.ClassDocument entry) {

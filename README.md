@@ -15,6 +15,8 @@ Core extends Create with pack-specific content and rules; its mod ID is `cwi`.
 - KubeJS machine recipes, catalysts, periodic inputs/outputs, weighted output
   pools and priority where supported; additional Create/addon recipe integrations
   and JEI displays. Emissive block/item textures use `.mcmeta` metadata.
+- Script-owned crystal families using `budding` and `crystal_cluster` block
+  builders, with vanilla growth, waterlogging, harvesting and optional growth effects.
 - Fixed CWI rules prevent new Nether portals, disable all advancements and
   suppress experimental-world/resource-pack format warnings. Selected Vintage
   Improvements materials and addon conversion interactions are also removed.

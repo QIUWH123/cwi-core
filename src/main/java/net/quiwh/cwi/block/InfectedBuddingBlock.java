@@ -19,9 +19,8 @@ import java.util.Map;
 /**
  * A full block that advances adjacent amethyst-style growth stages.
  *
- * <p>The target IDs are resolved at tick time so the quartz variant can keep
- * its optional Geode Plus outputs without taking a hard Java dependency on
- * that mod.</p>
+ * <p>Target IDs resolve at tick time so the quartz variant can grow its
+ * script-owned stages while remaining safe when they are not registered.</p>
  */
 public final class InfectedBuddingBlock extends Block {
     private static final float GROWTH_CHANCE = 0.2F;

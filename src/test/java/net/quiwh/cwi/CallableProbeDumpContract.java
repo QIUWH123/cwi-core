@@ -87,6 +87,11 @@ public final class CallableProbeDumpContract {
             var symbols = new HashMap<ClassPath, String>(); for (var path : document.getImports()) symbols.put(path, path.getClassName());
             document.setResolvedSymbols(symbols);
             String text = String.join("\n", document.format());
+            if (type == net.quiwh.cwi.compat.crystal.BuddingBlockBuilder.class)
+                check(text.contains("growthChance(") && text.contains("growthFaces(") && text.contains("growthInWater(")
+                        && text.contains("growthEffect(") && text.contains("stages("), "typed budding configuration methods");
+            if (type == net.quiwh.cwi.compat.crystal.CrystalClusterBlockBuilder.class)
+                check(text.contains("stage(") && text.contains("model("), "typed crystal stage and model methods");
             if(type==net.quiwh.cwi.pollution.GasProfile.Builder.class) {
                 check(text.contains("halfLife(")&&text.contains("oxygenFraction(")&&text.contains("route(")&&text.contains("damagePerSecond")&&text.contains("levelThresholds")&&text.contains("'inhalation'"),"typed gas options and routes");
                 check(!text.contains("java.util.Map"),"gas options use object shapes instead of Java Map");

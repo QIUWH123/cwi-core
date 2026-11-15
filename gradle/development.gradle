@@ -43,6 +43,7 @@ tasks.register('prepareHammerGameTestScript', Sync) {
     from('src/test/kubejs/shadowdrop_contracts.js')
     from('src/test/kubejs/callable_startup_contracts.js')
     from('src/test/kubejs/world_interaction_startup.js')
+    from('src/test/kubejs/crystal_builder_contracts.js')
     from('src/test/kubejs/gas_pollution_fluids.js')
     from('src/test/kubejs/pack/startup_scripts/GasProfiles.js')
     from('examples/pack-hammer-models.js')

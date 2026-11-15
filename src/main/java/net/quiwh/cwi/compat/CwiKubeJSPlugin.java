@@ -58,8 +58,15 @@ public final class CwiKubeJSPlugin implements KubeJSPlugin {
     }
 
     @Override public void registerBuilderTypes(BuilderTypeRegistry registry) {
-        registry.of(Registries.BLOCK, blocks -> blocks.add(ResourceLocation.parse("cwi:drying"),
-                DryingBlockBuilder.class, DryingBlockBuilder::new));
+        registry.of(Registries.BLOCK, blocks -> {
+            blocks.add(ResourceLocation.parse("cwi:drying"), DryingBlockBuilder.class, DryingBlockBuilder::new);
+            blocks.add(ResourceLocation.parse("kubejs:budding"),
+                    net.quiwh.cwi.compat.crystal.BuddingBlockBuilder.class,
+                    net.quiwh.cwi.compat.crystal.BuddingBlockBuilder::new);
+            blocks.add(ResourceLocation.parse("kubejs:crystal_cluster"),
+                    net.quiwh.cwi.compat.crystal.CrystalClusterBlockBuilder.class,
+                    net.quiwh.cwi.compat.crystal.CrystalClusterBlockBuilder::new);
+        });
         registry.of(Registries.ITEM, items ->
                 items.add(ResourceLocation.fromNamespaceAndPath("kubejs", "hammer"),
                         HammerBuilder.class, HammerBuilder::new));

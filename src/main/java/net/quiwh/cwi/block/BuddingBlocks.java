@@ -26,10 +26,10 @@ public final class BuddingBlocks {
             id("minecraft:medium_amethyst_bud"), id("minecraft:large_amethyst_bud"),
             id("minecraft:large_amethyst_bud"), id("minecraft:amethyst_cluster"));
     private static final Map<ResourceLocation, ResourceLocation> QUARTZ_GROWTH = Map.of(
-            id("minecraft:air"), id("geode_plus:small_nether_quartz_bud"),
-            id("geode_plus:small_nether_quartz_bud"), id("geode_plus:medium_nether_quartz_bud"),
-            id("geode_plus:medium_nether_quartz_bud"), id("geode_plus:large_nether_quartz_bud"),
-            id("geode_plus:large_nether_quartz_bud"), id("geode_plus:nether_quartz_crystal"));
+            id("minecraft:air"), id("cwi:small_quartz_bud"),
+            id("cwi:small_quartz_bud"), id("cwi:medium_quartz_bud"),
+            id("cwi:medium_quartz_bud"), id("cwi:large_quartz_bud"),
+            id("cwi:large_quartz_bud"), id("cwi:quartz_crystal"));
 
     public static final DeferredHolder<Block, InfectedBuddingBlock> INFECTED_BUDDING_AMETHYST = BLOCKS.register(
             "infected_budding_amethyst", () -> create(AMETHYST_GROWTH));
